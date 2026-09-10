@@ -49,7 +49,7 @@ RSpec.describe "Cases", type: :request do
     it "creates a case and redirects to show" do
       post cases_path, params: valid_params
 
-      expect(response).to redirect_to(case_path(Case.last))
+      expect(response).to redirect_to(case_path(Case.order(:created_at).last))
       follow_redirect!
       expect(response.body).to include("Application assessment")
     end
@@ -59,7 +59,7 @@ RSpec.describe "Cases", type: :request do
         post cases_path, params: valid_params
       }.to change(Case, :count).by(1)
 
-      kase = Case.last
+      kase = Case.order(:created_at).last
       expect(kase.public_service).to eq(service)
       expect(kase.application_completed_on).to eq(Date.new(2026, 7, 30))
       expect(kase.payment_date).to eq(Date.new(2026, 7, 27))
@@ -73,7 +73,7 @@ RSpec.describe "Cases", type: :request do
       }.to change(CaseObservation, :count).by(1)
         .and change(CaseMilestoneObservation, :count).by(4)
 
-      observation = CaseObservation.last
+      observation = CaseObservation.order(:created_at).last
       expect(observation.observation_type).to eq("portal")
       expect(observation.observed_on).to eq(Date.new(2026, 9, 10))
       expect(observation.case_milestone_observations.count).to eq(4)
@@ -82,7 +82,7 @@ RSpec.describe "Cases", type: :request do
     it "stores all milestone statuses" do
       post cases_path, params: valid_params
 
-      observation = CaseObservation.last
+      observation = CaseObservation.order(:created_at).last
       milestones = observation.case_milestone_observations.includes(:process_step).sort_by { |m| m.process_step.sequence }
 
       expect(milestones[0].process_step.name).to eq("Quality Control and Coordinate Entry")

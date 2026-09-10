@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
+  # Reveal health status on /up that returns 200 if it boots without exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
@@ -10,6 +10,8 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   resources :public_services, only: %i[index show], param: :slug
-  resources :cases, only: %i[new create show]
+  resources :cases, only: %i[new create show] do
+    resources :observations, only: %i[new create], controller: "case_observations"
+  end
   root "public_services#index"
 end

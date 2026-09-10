@@ -1,0 +1,198 @@
+<% content_for :title, "Record an update | CivicRoute Ghana" %>
+
+<div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
+  <ul>
+    <li><%= link_to "Services", root_path %></li>
+    <li><%= link_to @case.public_service.name, public_service_path(@case.public_service.slug) %></li>
+    <li><%= link_to "Assessment", case_path(@case) %></li>
+    <li aria-current="page">Record an update</li>
+  </ul>
+</div>
+
+<%= link_to case_path(@case), class: "btn btn-ghost btn-sm mb-4 gap-1" do %>
+  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+  Back to assessment
+<% end %>
+
+<div class="mx-auto max-w-2xl">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Record an update</h1>
+    <p class="mt-4 text-lg leading-8 text-base-content/75">
+      Add information you received or observed after your previous case assessment.
+    </p>
+  </div>
+
+  <%= simple_form_for @observation, url: case_observations_path(@case), scope: :case_observation, class: "space-y-6" do |f| %>
+    <div class="card border border-base-300 bg-base-100">
+      <div class="card-body space-y-6">
+        <h2 class="card-title text-xl">Where did this information come from?</h2>
+
+        <div class="form-control">
+          <% CivicRoute::EVIDENCE_SOURCES.each do |key, label| %>
+            <label class="label cursor-pointer justify-start gap-3">
+              <%= f.radio_button :observation_type, key,
+                class: "radio radio-primary",
+                data: { action: "change->evidence-form#toggleFields" } %>
+              <span class="label-text"><%= label %></span>
+            </label>
+          <% end %>
+          <% if @observation.errors[:observation_type].any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @observation.errors[:observation_type].first %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100">
+      <div class="card-body space-y-6">
+        <h2 class="card-title text-xl">When did you receive this information?</h2>
+
+        <div class="form-control">
+          <%= f.label :observed_on, "Date received *", class: "label" %>
+          <%= f.date_field :observed_on,
+            class: "input input-bordered w-full #{'input-error' if @observation.errors[:observed_on].any?}",
+            max: Date.current.to_s,
+            required: true %>
+          <% if @observation.errors[:observed_on].any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @observation.errors[:observed_on].first %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100" id="non-portal-fields">
+      <div class="card-body space-y-6">
+        <h2 class="card-title text-xl">How was the application's progress described?</h2>
+
+        <div class="form-control">
+          <% CivicRoute::PROGRESS_CLAIMS.each do |key, label| %>
+            <label class="label cursor-pointer justify-start gap-3">
+              <%= f.radio_button :progress_claim, key,
+                class: "radio radio-primary",
+                data: { action: "change->evidence-form#toggleMilestoneField" } %>
+              <span class="label-text"><%= label %></span>
+            </label>
+          <% end %>
+          <% if @observation.errors[:progress_claim].any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @observation.errors[:progress_claim].first %></span>
+            </label>
+          <% end %>
+        </div>
+
+        <div class="form-control" id="milestone-select" style="display: none;">
+          <%= f.label :reported_process_step_id, "Which milestone?", class: "label" %>
+          <%= f.select :reported_process_step_id,
+            options_from_collection_for_select(@tracking_steps, :id, :name, @observation.reported_process_step_id),
+            { include_blank: "Select a milestone" },
+            class: "select select-bordered w-full" %>
+          <% if @observation.errors[:reported_process_step_id].any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @observation.errors[:reported_process_step_id].first %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100" id="summary-field">
+      <div class="card-body space-y-6">
+        <h2 class="card-title text-xl">What were you told?</h2>
+
+        <div class="alert alert-warning">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 size-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>
+          <span>Do not include Ghana Card numbers, phone numbers, personal addresses, passwords, or other unnecessary personal information.</span>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :summary, "Summary", class: "label" %>
+          <%= f.text_area :summary,
+            class: "textarea textarea-bordered w-full h-32 #{'textarea-error' if @observation.errors[:summary].any?}",
+            placeholder: "Describe what you were told or observed..." %>
+          <% if @observation.errors[:summary].any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @observation.errors[:summary].first %></span>
+            </label>
+          <% end %>
+          <label class="label">
+            <span class="label-text-alt text-base-content/60">Maximum 1000 characters</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100" id="portal-snapshot-fields" style="display: none;">
+      <div class="card-body space-y-6">
+        <h2 class="card-title text-xl">Portal tracking snapshot</h2>
+        <p class="text-sm text-base-content/60">Record the status currently displayed for each tracking milestone.</p>
+
+        <% @tracking_steps.each do |step| %>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold"><%= step.name %></span>
+            </label>
+            <select name="milestones[<%= step.id %>]"
+              class="select select-bordered w-full">
+              <option value="">Select status</option>
+              <% CivicRoute::PORTAL_STATUSES.each do |status| %>
+                <option value="<%= status %>"><%= status %></option>
+              <% end %>
+            </select>
+          </div>
+        <% end %>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Overall status shown by the portal</span>
+          </label>
+          <%= f.text_field :overall_status,
+            class: "input input-bordered w-full",
+            placeholder: "Leave blank if not shown" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-actions justify-end">
+      <%= f.submit "Save evidence", class: "btn btn-primary btn-wide" %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const portalRadio = document.querySelector('input[name="case_observation[observation_type]"][value="portal"]');
+    const nonPortalFields = document.getElementById("non-portal-fields");
+    const summaryField = document.getElementById("summary-field");
+    const portalFields = document.getElementById("portal-snapshot-fields");
+    const milestoneSelect = document.getElementById("milestone-select");
+    const publicMilestoneRadio = document.querySelector('input[name="case_observation[progress_claim]"][value="public_milestone"]');
+
+    function toggleFields() {
+      const isPortal = portalRadio && portalRadio.checked;
+      if (nonPortalFields) nonPortalFields.style.display = isPortal ? "none" : "block";
+      if (summaryField) summaryField.style.display = isPortal ? "none" : "block";
+      if (portalFields) portalFields.style.display = isPortal ? "block" : "none";
+    }
+
+    function toggleMilestoneField() {
+      if (milestoneSelect && publicMilestoneRadio) {
+        milestoneSelect.style.display = publicMilestoneRadio.checked ? "block" : "none";
+      }
+    }
+
+    document.querySelectorAll('input[name="case_observation[observation_type]"]').forEach(function(radio) {
+      radio.addEventListener("change", toggleFields);
+    });
+
+    document.querySelectorAll('input[name="case_observation[progress_claim]"]').forEach(function(radio) {
+      radio.addEventListener("change", toggleMilestoneField);
+    });
+
+    toggleFields();
+    toggleMilestoneField();
+  });
+</script>

@@ -16,8 +16,8 @@ RSpec.describe Country, type: :model do
   end
 
   it "rejects a duplicate code" do
-    create(:country, code: "GH")
-    duplicate = build(:country, code: "GH")
+    create(:country, code: "ZZ")
+    duplicate = build(:country, code: "ZZ")
 
     expect(duplicate).not_to be_valid
     expect(duplicate.errors[:code]).to include("has already been taken")

@@ -19,6 +19,33 @@
     <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Application assessment</h1>
   </div>
 
+  <div class="flex flex-wrap gap-2 mb-6">
+    <%= link_to new_case_observation_path(@case), class: "btn btn-outline btn-sm gap-1" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+      Record an update
+    <% end %>
+  </div>
+
+  <div class="card border border-base-300 bg-base-100 mb-6">
+    <div class="card-body">
+      <h2 class="card-title text-lg">Evidence summary</h2>
+      <div class="flex flex-wrap gap-4 mt-2">
+        <div class="stat p-0">
+          <div class="stat-title">Total evidence</div>
+          <div class="stat-value text-lg"><%= @evidence_counts[:total] %></div>
+        </div>
+        <div class="stat p-0">
+          <div class="stat-title">Portal snapshots</div>
+          <div class="stat-value text-lg"><%= @evidence_counts[:portal] %></div>
+        </div>
+        <div class="stat p-0">
+          <div class="stat-title">Institutional updates</div>
+          <div class="stat-value text-lg"><%= @evidence_counts[:non_portal] %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="card border border-base-300 bg-base-100 mb-8">
     <div class="card-body">
       <h2 class="card-title text-lg">Case information</h2>
@@ -49,7 +76,7 @@
         <% end %>
         <div>
           <dt class="font-semibold text-base-content/60">Portal observed</dt>
-          <dd class="mt-1"><%= l(@observation.observed_on, format: :long) %></dd>
+          <dd class="mt-1"><%= l(@latest_portal.observed_on, format: :long) %></dd>
         </div>
       </dl>
     </div>
@@ -176,16 +203,99 @@
     </div>
   <% end %>
 
+  <% if @evidence_comparison.status != :no_comparison %>
+    <div class="card border
+      <% case @evidence_comparison.status %>
+      <% when :consistent %>
+        border-success/30
+      <% when :possible_discrepancy, :possible_stale_public_status %>
+        border-error/30
+      <% when :portal_unchanged %>
+        border-warning/30
+      <% else %>
+        border-base-300
+      <% end %>
+      bg-base-100 mb-8">
+      <div class="card-body">
+        <div class="flex items-center gap-2 mb-4">
+          <% case @evidence_comparison.status %>
+          <% when :consistent %>
+            <span class="badge badge-success gap-1">Consistent</span>
+          <% when :possible_discrepancy %>
+            <span class="badge badge-error gap-1">Possible discrepancy</span>
+          <% when :portal_unchanged %>
+            <span class="badge badge-warning gap-1">Portal unchanged</span>
+          <% when :possible_stale_public_status %>
+            <span class="badge badge-error gap-1">Possible stale public status</span>
+          <% when :insufficient_information %>
+            <span class="badge badge-ghost gap-1">Insufficient information</span>
+          <% end %>
+          <span class="badge badge-ghost">Evidence comparison</span>
+        </div>
+
+        <h2 class="card-title text-xl mb-4">
+          <% case @evidence_comparison.status %>
+          <% when :consistent %>
+            Evidence appears consistent
+          <% when :possible_discrepancy %>
+            Possible public-status discrepancy
+          <% when :portal_unchanged %>
+            Portal information unchanged
+          <% when :possible_stale_public_status %>
+            Possible stale public status
+          <% when :insufficient_information %>
+            Cannot compare evidence structurally
+          <% end %>
+        </h2>
+
+        <% case @evidence_comparison.status %>
+        <% when :consistent %>
+          <p class="leading-7 text-base-content/75">
+            The institutional update you recorded appears consistent with the latest portal snapshot.
+          </p>
+        <% when :possible_discrepancy %>
+          <p class="leading-7 text-base-content/75 mb-4">
+            The update you recorded describes your application as being at a later stage than what the latest portal snapshot shows.
+          </p>
+          <p class="text-sm text-base-content/60">
+            CivicRoute cannot determine the institution's actual internal status.
+          </p>
+        <% when :portal_unchanged %>
+          <p class="leading-7 text-base-content/75">
+            The public portal information you recorded did not change between the two observation dates.
+          </p>
+        <% when :possible_stale_public_status %>
+          <p class="leading-7 text-base-content/75 mb-4">
+            The public portal information recorded on <%= l(@evidence_comparison.portal_observation.observed_on, format: :long) %> is unchanged from the snapshot recorded on <%= l(@evidence_comparison.comparison_observation.observed_on, format: :long) %>.
+          </p>
+          <p class="leading-7 text-base-content/75 mb-4">
+            Between those observations, you recorded a <%= CivicRoute::EVIDENCE_PROVENANCE_LABELS[@evidence_comparison.comparison_observation.observation_type.to_sym]&.downcase %> describing the application as <%= @evidence_comparison.comparison_observation.progress_claim.humanize.downcase %>.
+          </p>
+          <p class="leading-7 text-base-content/75 mb-4">
+            The public portal may therefore not reflect the more recent progress communicated to you.
+          </p>
+          <p class="text-sm text-base-content/60">
+            CivicRoute cannot determine the Lands Commission's actual internal status.
+          </p>
+        <% when :insufficient_information %>
+          <p class="leading-7 text-base-content/75">
+            The evidence cannot be structurally compared at this time.
+          </p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <div class="card border border-base-300 bg-base-100 mb-8">
     <div class="card-body">
       <h2 class="card-title text-lg">What the public portal showed</h2>
-      <p class="text-sm text-base-content/50 mt-1">Observed <%= l(@observation.observed_on, format: :long) %></p>
+      <p class="text-sm text-base-content/50 mt-1">Observed <%= l(@latest_portal.observed_on, format: :long) %></p>
       <p class="text-xs text-base-content/40 mt-2">Citizen-observed public portal information</p>
 
-      <% if @observation.overall_status.present? %>
+      <% if @latest_portal.overall_status.present? %>
         <div class="mt-4">
           <span class="font-semibold text-sm">Overall status:</span>
-          <span class="badge badge-neutral ml-2"><%= @observation.overall_status %></span>
+          <span class="badge badge-neutral ml-2"><%= @latest_portal.overall_status %></span>
         </div>
       <% end %>
 
@@ -240,7 +350,7 @@
 
   <div class="card border border-base-300 bg-base-100 mb-8">
     <div class="card-body">
-      <h2 class="card-title text-lg">Timeline</h2>
+      <h2 class="card-title text-lg">Evidence timeline</h2>
       <ul class="timeline timeline-vertical mt-4">
         <% if @case.payment_date %>
           <li>
@@ -286,13 +396,32 @@
           </li>
         <% end %>
 
-        <li>
-          <div class="timeline-start"><%= l(@observation.observed_on, format: :short) %></div>
-          <div class="timeline-middle">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-          </div>
-          <div class="timeline-end timeline-box">Portal snapshot recorded</div>
-        </li>
+        <% @observations.each do |obs| %>
+          <li>
+            <div class="timeline-start"><%= l(obs.observed_on, format: :short) %></div>
+            <div class="timeline-middle">
+              <% if obs.portal? %>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+              <% else %>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-warning"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+              <% end %>
+            </div>
+            <div class="timeline-end timeline-box">
+              <% if obs.portal? %>
+                Portal snapshot recorded
+                <% pending = obs.case_milestone_observations.select { |m| m.status == "Pending" } %>
+                <% if pending.any? %>
+                  <br><span class="text-xs text-base-content/60"><%= pending.map { |m| m.process_step.name }.join(", ") %> — Pending</span>
+                <% end %>
+              <% else %>
+                <%= CivicRoute::EVIDENCE_SOURCES[obs.observation_type.to_sym] || obs.observation_type %>
+                <% if obs.progress_claim.present? %>
+                  <br><span class="text-xs text-base-content/60"><%= CivicRoute::PROGRESS_CLAIMS[obs.progress_claim.to_sym] || obs.progress_claim %></span>
+                <% end %>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
       </ul>
     </div>
   </div>

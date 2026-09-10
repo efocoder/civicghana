@@ -27,7 +27,8 @@
     <span>CivicRoute does not access the Lands Commission's internal systems. Enter only information available to you.</span>
   </div>
 
-  <%= form_with model: @case, class: "space-y-6" do |f| %>
+  <turbo-frame id="case-assessment-form">
+  <%= simple_form_for @case, class: "space-y-6", data: { turbo_frame: "_top" } do |f| %>
     <%= f.hidden_field :public_service_id, value: @public_service.id %>
 
     <div class="card border border-base-300 bg-base-100">
@@ -108,7 +109,7 @@
     <div class="card border border-base-300 bg-base-100">
       <div class="card-body space-y-6">
         <h2 class="card-title text-xl">What does the tracking portal currently show?</h2>
-        <p class="text-sm text-base-content/60">Record the status currently displayed for each tracking milestone.</p>
+        <p class="text-sm text-base-content/60">For each milestone below, open the “Select status” menu and choose what the portal currently shows. Choose a status for at least one milestone so CivicRoute has a portal snapshot to assess and compare later.</p>
 
         <% @tracking_steps.each do |step| %>
           <div class="form-control">
@@ -168,8 +169,15 @@
       </div>
     </div>
 
+    <% if @observation&.errors&.any? %>
+      <div class="alert alert-error" role="alert">
+        <span><%= @observation.errors.full_messages.to_sentence %></span>
+      </div>
+    <% end %>
+
     <div class="card-actions justify-end">
       <%= f.submit "Assess my application", class: "btn btn-primary btn-wide" %>
     </div>
   <% end %>
+  </turbo-frame>
 </div>

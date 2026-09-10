@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_10_180300) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_10_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -50,8 +50,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_180300) do
     t.string "observation_type", null: false
     t.date "observed_on", null: false
     t.string "overall_status"
+    t.string "progress_claim"
+    t.uuid "reported_process_step_id"
+    t.text "summary"
     t.datetime "updated_at", null: false
     t.index ["case_id"], name: "index_case_observations_on_case_id"
+    t.index ["reported_process_step_id"], name: "index_case_observations_on_reported_process_step_id"
     t.check_constraint "observed_on >= (CURRENT_DATE - 'P10Y'::interval)", name: "case_observations_reasonable_observed_on"
   end
 
@@ -161,6 +165,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_180300) do
   add_foreign_key "case_milestone_observations", "case_observations"
   add_foreign_key "case_milestone_observations", "process_steps"
   add_foreign_key "case_observations", "cases"
+  add_foreign_key "case_observations", "process_steps", column: "reported_process_step_id"
   add_foreign_key "cases", "public_services"
   add_foreign_key "institutions", "countries"
   add_foreign_key "process_steps", "public_services"

@@ -20,7 +20,7 @@ RSpec.describe PublicService, type: :model do
   end
 
   it "accepts a valid slug" do
-    service.slug = "official-consolidated-search"
+    service.slug = "valid-service-slug"
     expect(service).to be_valid
   end
 
