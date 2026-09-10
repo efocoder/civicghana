@@ -1,0 +1,39 @@
+<% content_for :title, "Check your application | CivicRoute Ghana" %>
+
+<div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
+  <ul>
+    <li><%= link_to "Services", root_path %></li>
+    <li><%= link_to "Official / Consolidated Search", public_service_path("official-consolidated-search") %></li>
+    <li aria-current="page">Check your application</li>
+  </ul>
+</div>
+
+<div class="mx-auto max-w-2xl">
+  <div class="mb-8">
+    <p class="mb-2 font-semibold text-primary">Lands Commission</p>
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Check your application</h1>
+    <p class="mt-4 text-lg leading-8 text-base-content/75">
+      Compare what you can currently see about your application with the verified public-service information available in CivicRoute.
+    </p>
+  </div>
+
+  <div class="card border border-info/30 bg-base-100 shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title">Case assessment is being prepared</h2>
+      <p class="leading-7 text-base-content/75">
+        The tools to help you compare your application details with the verified public-service rule are being built.
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <%= link_to "Back to service guide", public_service_path("official-consolidated-search"), class: "btn btn-outline" %>
+  </div>
+
+  <div class="mt-8 rounded-box border border-base-300 bg-base-100 p-6">
+    <p class="text-sm leading-6 text-base-content/60">
+      CivicRoute does not access the Lands Commission's internal systems.
+      You will provide the information currently visible to you when case checking is enabled.
+    </p>
+  </div>
+</div>

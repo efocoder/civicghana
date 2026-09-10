@@ -1,0 +1,50 @@
+services:
+  db:
+    image: docker.io/library/postgres:17-alpine
+    environment:
+      POSTGRES_USER: civicroute
+      POSTGRES_PASSWORD: civicroute
+      POSTGRES_DB: civicroute_development
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U civicroute -d civicroute_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: >-
+      sh -c "set -e;
+      bundle check || bundle install;
+      rm -f tmp/pids/server.pid;
+      bin/rails db:prepare;
+      exec bin/dev"
+    environment:
+      DB_HOST: db
+      DB_USERNAME: civicroute
+      DB_PASSWORD: civicroute
+      DB_NAME: civicroute_development
+      TEST_DB_NAME: civicroute_test
+      BINDING: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    volumes:
+      # Relabel the bind mount for rootless Podman on SELinux hosts.
+      - .:/rails:Z
+      - bundle_data:/usr/local/bundle
+
+volumes:
+  bundle_data:
+  postgres_data:

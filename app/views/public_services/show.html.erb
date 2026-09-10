@@ -1,0 +1,101 @@
+<% content_for :title, "#{@public_service.name} | CivicRoute Ghana" %>
+
+<div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
+  <ul>
+    <li><%= link_to "Services", root_path %></li>
+    <li><%= @public_service.institution.name %></li>
+    <li aria-current="page"><%= @public_service.name %></li>
+  </ul>
+</div>
+
+<%= link_to root_path, class: "btn btn-ghost btn-sm mb-4 gap-1" do %>
+  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+  All services
+<% end %>
+
+<div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+  <section>
+    <div class="mb-8">
+      <p class="mb-2 font-semibold text-primary"><%= @public_service.institution.country.name %> · <%= @public_service.institution.name %></p>
+      <h1 class="text-3xl font-bold tracking-tight sm:text-5xl"><%= @public_service.name %></h1>
+      <p class="mt-4 max-w-3xl text-lg leading-8 text-base-content/75"><%= @public_service.description %></p>
+    </div>
+
+    <% if @duration_rule %>
+      <article class="card border border-success/30 bg-base-100 shadow-sm" aria-labelledby="official-rule-title">
+        <div class="card-body">
+          <div class="mb-2 flex flex-wrap items-center gap-2">
+            <span class="badge badge-success gap-1">✓ Verified source</span>
+            <span class="badge badge-ghost">Official fact</span>
+          </div>
+          <h2 id="official-rule-title" class="card-title text-2xl">Official search result: <%= @duration_rule.value %> <%= @duration_rule.unit %></h2>
+          <p class="leading-7">
+            The Lands Commission is required to issue the result of an official search within
+            <strong><%= @duration_rule.value %> days after payment</strong> of the prescribed fees.
+          </p>
+
+          <div class="divider"></div>
+
+          <dl class="grid gap-4 text-sm sm:grid-cols-2">
+            <div>
+              <dt class="font-semibold">Source</dt>
+              <dd class="mt-1 text-base-content/70"><%= @duration_rule.source.title %></dd>
+            </div>
+            <div>
+              <dt class="font-semibold">Provision</dt>
+              <dd class="mt-1 text-base-content/70"><%= @duration_rule.source.section_label %></dd>
+            </div>
+            <div>
+              <dt class="font-semibold">Publisher</dt>
+              <dd class="mt-1 text-base-content/70"><%= @duration_rule.source.publisher %></dd>
+            </div>
+            <div>
+              <dt class="font-semibold">Effective from</dt>
+              <dd class="mt-1 text-base-content/70"><%= l(@duration_rule.effective_from, format: :long) %></dd>
+            </div>
+            <div>
+              <dt class="font-semibold">Last verified</dt>
+              <dd class="mt-1 text-base-content/70"><%= l(@duration_rule.verified_at.to_date, format: :long) %></dd>
+            </div>
+          </dl>
+
+          <div class="card-actions mt-3">
+            <%= link_to "Read the authoritative source", @duration_rule.source.url,
+              class: "btn btn-outline btn-success", target: "_blank", rel: "noopener noreferrer" %>
+          </div>
+        </div>
+      </article>
+    <% else %>
+      <div class="alert alert-warning" role="status">
+        <span>No currently verified duration rule is available. CivicRoute will not display an unverified estimate.</span>
+      </div>
+    <% end %>
+
+    <section class="mt-8" aria-labelledby="public-steps-title">
+      <h2 id="public-steps-title" class="text-2xl font-bold">Published public journey</h2>
+      <p class="mt-2 text-base-content/70">These steps explain the public process; they do not claim to show the institution's internal workflow.</p>
+      <ol class="mt-5 space-y-3">
+        <% @public_service.process_steps.each do |step| %>
+          <li class="flex gap-4 rounded-box border border-base-300 bg-base-100 p-4">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-content"><%= step.sequence %></span>
+            <div>
+              <h3 class="font-semibold"><%= step.name %></h3>
+              <p class="mt-1 text-sm leading-6 text-base-content/70"><%= step.description %></p>
+            </div>
+          </li>
+        <% end %>
+      </ol>
+    </section>
+  </section>
+
+  <aside>
+    <div class="card sticky top-6 border border-base-300 bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title">Ready to check your case?</h2>
+        <p class="text-sm leading-6 text-base-content/70">Compare what you can currently see about your application with the verified public-service information available in CivicRoute.</p>
+        <%= link_to "Start checking my case", new_case_path, class: "btn btn-primary" %>
+        <p class="text-xs text-base-content/60">CivicRoute does not access the institution's internal systems. You remain in control of the information you provide.</p>
+      </div>
+    </div>
+  </aside>
+</div>
