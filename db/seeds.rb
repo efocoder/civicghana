@@ -81,6 +81,16 @@ official_search.update!({
   step.update!({ name: name, description: description, source: source })
 end
 
+[
+  [1, "Quality Control and Coordinate Entry", "First tracking milestone shown on the public portal.", sources.fetch(:status_portal)],
+  [2, "Records Verification", "Second tracking milestone shown on the public portal.", sources.fetch(:status_portal)],
+  [3, "Report Preparation", "Third tracking milestone shown on the public portal.", sources.fetch(:status_portal)],
+  [4, "Vetting and Final Approval", "Fourth tracking milestone shown on the public portal.", sources.fetch(:status_portal)]
+].each do |sequence, name, description, source|
+  step = ProcessStep.find_or_initialize_by(public_service: official_search, sequence: sequence + 3)
+  step.update!({ name: name, description: description, source: source })
+end
+
 duration_rule = ServiceRule.find_or_initialize_by(
   public_service: official_search,
   rule_type: :expected_duration_days,
@@ -91,7 +101,8 @@ duration_rule.update!({
   value: 14,
   unit: "days after payment",
   verified_at: verified_at,
-  active: true
+  active: true,
+  anchor_event: :payment
 })
 
 [

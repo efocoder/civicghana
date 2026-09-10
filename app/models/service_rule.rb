@@ -8,6 +8,12 @@ class ServiceRule < ApplicationRecord
     source_review_interval: "source_review_interval"
   }, validate: true
 
+  enum :anchor_event, {
+    payment: "payment",
+    completed_application: "completed_application",
+    portal_created: "portal_created"
+  }, validate: true
+
   belongs_to :public_service
   belongs_to :source
 

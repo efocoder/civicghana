@@ -15,6 +15,8 @@ module ServiceRules
       matches = public_service.service_rules
         .joins(:source)
         .merge(Source.verified)
+        .merge(Source.where("sources.effective_from IS NULL OR sources.effective_from <= ?", on))
+        .merge(Source.where("sources.effective_to IS NULL OR sources.effective_to >= ?", on))
         .verified
         .effective_on(on)
         .where(rule_type: rule_type)

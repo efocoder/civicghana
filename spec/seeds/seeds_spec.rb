@@ -26,13 +26,29 @@ RSpec.describe "Seed data", type: :model do
       expect(service).to be_active
     end
 
-    it "has three published process steps" do
+    it "has seven process steps (3 published journey + 4 tracking milestones)" do
       steps = service.process_steps.order(:sequence)
-      expect(steps.count).to eq(3)
-      expect(steps.map(&:sequence)).to eq([ 1, 2, 3 ])
-      steps.each do |step|
+      expect(steps.count).to eq(7)
+      expect(steps.map(&:sequence)).to eq([ 1, 2, 3, 4, 5, 6, 7 ])
+    end
+
+    it "has three published journey steps with sources" do
+      journey_steps = service.process_steps.where("sequence <= 3").order(:sequence)
+      expect(journey_steps.count).to eq(3)
+      journey_steps.each do |step|
         expect(step.source).to be_present
       end
+    end
+
+    it "has four tracking milestone steps" do
+      tracking_steps = service.process_steps.where("sequence >= 4").order(:sequence)
+      expect(tracking_steps.count).to eq(4)
+      expect(tracking_steps.map(&:name)).to eq([
+        "Quality Control and Coordinate Entry",
+        "Records Verification",
+        "Report Preparation",
+        "Vetting and Final Approval"
+      ])
     end
 
     it "has a verified 14-day expected_duration_days rule" do

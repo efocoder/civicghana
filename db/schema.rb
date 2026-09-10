@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_10_162600) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_10_180300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -31,6 +31,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_162600) do
     t.index ["public_service_id"], name: "index_action_paths_on_public_service_id"
     t.index ["source_id"], name: "index_action_paths_on_source_id"
     t.check_constraint "sequence > 0", name: "action_paths_positive_sequence"
+  end
+
+  create_table "case_milestone_observations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "case_observation_id", null: false
+    t.datetime "created_at", null: false
+    t.uuid "process_step_id", null: false
+    t.string "status", null: false
+    t.datetime "updated_at", null: false
+    t.index ["case_observation_id", "process_step_id"], name: "idx_milestone_obs_per_snapshot", unique: true
+    t.index ["case_observation_id"], name: "index_case_milestone_observations_on_case_observation_id"
+    t.index ["process_step_id"], name: "index_case_milestone_observations_on_process_step_id"
+  end
+
+  create_table "case_observations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "case_id", null: false
+    t.datetime "created_at", null: false
+    t.string "observation_type", null: false
+    t.date "observed_on", null: false
+    t.string "overall_status"
+    t.datetime "updated_at", null: false
+    t.index ["case_id"], name: "index_case_observations_on_case_id"
+    t.check_constraint "observed_on >= (CURRENT_DATE - 'P10Y'::interval)", name: "case_observations_reasonable_observed_on"
+  end
+
+  create_table "cases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.date "application_completed_on", null: false
+    t.datetime "created_at", null: false
+    t.date "payment_date"
+    t.date "portal_created_on"
+    t.uuid "public_service_id", null: false
+    t.string "region", null: false
+    t.datetime "updated_at", null: false
+    t.index ["public_service_id"], name: "index_cases_on_public_service_id"
   end
 
   create_table "countries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -85,6 +118,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_162600) do
 
   create_table "service_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
+    t.string "anchor_event", default: "payment", null: false
     t.datetime "created_at", null: false
     t.date "effective_from", null: false
     t.date "effective_to"
@@ -124,6 +158,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_162600) do
 
   add_foreign_key "action_paths", "public_services"
   add_foreign_key "action_paths", "sources"
+  add_foreign_key "case_milestone_observations", "case_observations"
+  add_foreign_key "case_milestone_observations", "process_steps"
+  add_foreign_key "case_observations", "cases"
+  add_foreign_key "cases", "public_services"
   add_foreign_key "institutions", "countries"
   add_foreign_key "process_steps", "public_services"
   add_foreign_key "process_steps", "sources"

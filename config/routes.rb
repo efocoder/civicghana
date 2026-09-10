@@ -10,6 +10,6 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   resources :public_services, only: %i[index show], param: :slug
-  get "cases/new", to: "cases#new", as: :new_case
+  resources :cases, only: %i[new create show]
   root "public_services#index"
 end

@@ -1,0 +1,303 @@
+<% content_for :title, "Application assessment | CivicRoute Ghana" %>
+
+<div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
+  <ul>
+    <li><%= link_to "Services", root_path %></li>
+    <li><%= link_to @case.public_service.name, public_service_path(@case.public_service.slug) %></li>
+    <li aria-current="page">Assessment</li>
+  </ul>
+</div>
+
+<%= link_to public_service_path(@case.public_service.slug), class: "btn btn-ghost btn-sm mb-4 gap-1" do %>
+  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+  Back to service guide
+<% end %>
+
+<div class="mx-auto max-w-3xl">
+  <div class="mb-8">
+    <p class="mb-2 font-semibold text-primary"><%= @case.public_service.institution.country.name %> &middot; <%= @case.public_service.institution.name %></p>
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Application assessment</h1>
+  </div>
+
+  <div class="card border border-base-300 bg-base-100 mb-8">
+    <div class="card-body">
+      <h2 class="card-title text-lg">Case information</h2>
+      <dl class="grid gap-4 text-sm sm:grid-cols-2 mt-4">
+        <div>
+          <dt class="font-semibold text-base-content/60">Service</dt>
+          <dd class="mt-1"><%= @case.public_service.name %></dd>
+        </div>
+        <div>
+          <dt class="font-semibold text-base-content/60">Region</dt>
+          <dd class="mt-1"><%= @case.region %></dd>
+        </div>
+        <div>
+          <dt class="font-semibold text-base-content/60">Application completed</dt>
+          <dd class="mt-1"><%= l(@case.application_completed_on, format: :long) %></dd>
+        </div>
+        <% if @case.payment_date %>
+          <div>
+            <dt class="font-semibold text-base-content/60">Payment</dt>
+            <dd class="mt-1"><%= l(@case.payment_date, format: :long) %></dd>
+          </div>
+        <% end %>
+        <% if @case.portal_created_on %>
+          <div>
+            <dt class="font-semibold text-base-content/60">Portal Date Created</dt>
+            <dd class="mt-1"><%= l(@case.portal_created_on, format: :long) %></dd>
+          </div>
+        <% end %>
+        <div>
+          <dt class="font-semibold text-base-content/60">Portal observed</dt>
+          <dd class="mt-1"><%= l(@observation.observed_on, format: :long) %></dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card border border-base-300 bg-base-100 mb-8">
+    <div class="card-body">
+      <h2 class="card-title text-lg">Your application timeline</h2>
+      <dl class="grid gap-4 text-sm sm:grid-cols-2 mt-4">
+        <div>
+          <dt class="font-semibold text-base-content/60">Application completed</dt>
+          <dd class="mt-1"><%= l(@lifecycle.application_completed_on, format: :long) %></dd>
+        </div>
+        <div>
+          <dt class="font-semibold text-base-content/60">Portal observed</dt>
+          <dd class="mt-1"><%= l(@lifecycle.observed_on, format: :long) %></dd>
+        </div>
+        <div>
+          <dt class="font-semibold text-base-content/60">Time since completed application</dt>
+          <dd class="mt-1"><%= @lifecycle.days_since_completed_application %> days</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <% if @rule_result.assessment_state == :insufficient_information %>
+    <div class="card border border-warning/30 bg-base-100 shadow-sm mb-8">
+      <div class="card-body">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="badge badge-warning gap-1">Insufficient information</span>
+          <span class="badge badge-ghost">CivicRoute calculation</span>
+        </div>
+        <h2 class="card-title text-2xl mb-4">Published rule cannot be calculated</h2>
+        <p class="leading-7 text-base-content/75">
+          The verified published rule is measured from <%= @rule_result.rule_anchor_event.humanize.downcase %>,
+          but no <%= @rule_result.rule_anchor_event.humanize.downcase %> date was provided.
+        </p>
+        <div class="divider"></div>
+        <p class="text-sm text-base-content/60">
+          Published rule: <%= @rule_result.published_days %> <%= @rule_result.service_rule.unit %>
+        </p>
+      </div>
+    </div>
+  <% else %>
+    <div class="card border
+      <% if @rule_result.assessment_state == :within_timeframe %>
+        border-info/30
+      <% elsif @rule_result.assessment_state == :due_today %>
+        border-warning/30
+      <% else %>
+        border-error/30
+      <% end %>
+      bg-base-100 shadow-sm mb-8">
+      <div class="card-body">
+        <div class="flex items-center gap-2 mb-4">
+          <% if @rule_result.assessment_state == :within_timeframe %>
+            <span class="badge badge-info gap-1">Within timeframe</span>
+          <% elsif @rule_result.assessment_state == :due_today %>
+            <span class="badge badge-warning gap-1">Due today</span>
+          <% else %>
+            <span class="badge badge-error gap-1">Timeframe exceeded</span>
+          <% end %>
+          <span class="badge badge-ghost">CivicRoute calculation</span>
+        </div>
+
+        <h2 class="card-title text-2xl mb-4">
+          <% if @rule_result.assessment_state == :within_timeframe %>
+            Within published timeframe
+          <% elsif @rule_result.assessment_state == :due_today %>
+            Published timeframe reached today
+          <% else %>
+            Published timeframe exceeded
+          <% end %>
+        </h2>
+
+        <p class="leading-7 text-base-content/75 mb-6">
+          <% if @rule_result.assessment_state == :within_timeframe %>
+            Based on the verified published rule, the applicable timeframe has not yet elapsed.
+          <% elsif @rule_result.assessment_state == :due_today %>
+            Based on the verified published rule, the applicable timeframe ends today.
+          <% else %>
+            Based on the verified published rule, the applicable timeframe had elapsed by this assessment date.
+          <% end %>
+        </p>
+
+        <div class="divider"></div>
+
+        <dl class="grid gap-4 text-sm sm:grid-cols-2">
+          <div>
+            <dt class="font-semibold">Published rule</dt>
+            <dd class="mt-1 text-base-content/70"><%= @rule_result.published_days %> <%= @rule_result.service_rule.unit %></dd>
+          </div>
+          <div>
+            <dt class="font-semibold">Rule anchor</dt>
+            <dd class="mt-1 text-base-content/70"><%= @rule_result.rule_anchor_event.humanize %> &mdash; <%= l(@rule_result.rule_anchor_date, format: :long) %></dd>
+          </div>
+          <div>
+            <dt class="font-semibold">Published timeframe reached</dt>
+            <dd class="mt-1 text-base-content/70"><%= l(@rule_result.deadline, format: :long) %></dd>
+          </div>
+          <div>
+            <dt class="font-semibold">Assessment date</dt>
+            <dd class="mt-1 text-base-content/70"><%= l(@rule_result.assessment_date, format: :long) %></dd>
+          </div>
+          <% if @rule_result.assessment_state == :within_timeframe %>
+            <div>
+              <dt class="font-semibold">Days remaining</dt>
+              <dd class="mt-1 text-base-content/70"><%= @rule_result.days_remaining %> days</dd>
+            </div>
+          <% elsif @rule_result.assessment_state == :timeframe_exceeded %>
+            <div>
+              <dt class="font-semibold">Days beyond published timeframe</dt>
+              <dd class="mt-1 text-base-content/70"><%= @rule_result.days_beyond %> days</dd>
+            </div>
+          <% end %>
+        </dl>
+
+        <div class="divider"></div>
+
+        <p class="text-sm text-base-content/60">
+          Based on: <%= @rule_result.source.title %>, <%= @rule_result.source.section_label %>
+        </p>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="card border border-base-300 bg-base-100 mb-8">
+    <div class="card-body">
+      <h2 class="card-title text-lg">What the public portal showed</h2>
+      <p class="text-sm text-base-content/50 mt-1">Observed <%= l(@observation.observed_on, format: :long) %></p>
+      <p class="text-xs text-base-content/40 mt-2">Citizen-observed public portal information</p>
+
+      <% if @observation.overall_status.present? %>
+        <div class="mt-4">
+          <span class="font-semibold text-sm">Overall status:</span>
+          <span class="badge badge-neutral ml-2"><%= @observation.overall_status %></span>
+        </div>
+      <% end %>
+
+      <div class="overflow-x-auto mt-4">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Milestone</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @milestones.each do |m| %>
+              <tr>
+                <td><%= m.process_step.name %></td>
+                <td><span class="badge badge-neutral"><%= m.status %></span></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border border-base-300 bg-base-100 mb-8">
+    <div class="card-body">
+      <h2 class="card-title text-lg">Verified source</h2>
+      <dl class="grid gap-4 text-sm sm:grid-cols-2 mt-4">
+        <div>
+          <dt class="font-semibold">Source</dt>
+          <dd class="mt-1 text-base-content/70"><%= @rule_result.source.title %></dd>
+        </div>
+        <div>
+          <dt class="font-semibold">Provision</dt>
+          <dd class="mt-1 text-base-content/70"><%= @rule_result.source.section_label %></dd>
+        </div>
+        <div>
+          <dt class="font-semibold">Publisher</dt>
+          <dd class="mt-1 text-base-content/70"><%= @rule_result.source.publisher %></dd>
+        </div>
+        <div>
+          <dt class="font-semibold">Last verified</dt>
+          <dd class="mt-1 text-base-content/70"><%= l(@rule_result.source.verified_at.to_date, format: :long) %></dd>
+        </div>
+      </dl>
+      <div class="mt-4">
+        <%= link_to "Read authoritative source", @rule_result.source.url,
+          class: "btn btn-outline btn-sm", target: "_blank", rel: "noopener noreferrer" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border border-base-300 bg-base-100 mb-8">
+    <div class="card-body">
+      <h2 class="card-title text-lg">Timeline</h2>
+      <ul class="timeline timeline-vertical mt-4">
+        <% if @case.payment_date %>
+          <li>
+            <div class="timeline-start"><%= l(@case.payment_date, format: :short) %></div>
+            <div class="timeline-middle">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+            </div>
+            <div class="timeline-end timeline-box">Payment recorded</div>
+          </li>
+        <% end %>
+
+        <% if @case.portal_created_on %>
+          <li>
+            <div class="timeline-start"><%= l(@case.portal_created_on, format: :short) %></div>
+            <div class="timeline-middle">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+            </div>
+            <div class="timeline-end timeline-box">Portal Date Created</div>
+          </li>
+        <% end %>
+
+        <li>
+          <div class="timeline-start"><%= l(@case.application_completed_on, format: :short) %></div>
+          <div class="timeline-middle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+          </div>
+          <div class="timeline-end timeline-box">Application completed</div>
+        </li>
+
+        <% if @rule_result.deadline %>
+          <li>
+            <div class="timeline-start"><%= l(@rule_result.deadline, format: :short) %></div>
+            <div class="timeline-middle">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5
+                <% if @rule_result.assessment_state == :timeframe_exceeded %>
+                  text-error
+                <% else %>
+                  text-primary
+                <% end %>
+              "><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+            </div>
+            <div class="timeline-end timeline-box">Published rule timeframe reached</div>
+          </li>
+        <% end %>
+
+        <li>
+          <div class="timeline-start"><%= l(@observation.observed_on, format: :short) %></div>
+          <div class="timeline-middle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+          </div>
+          <div class="timeline-end timeline-box">Portal snapshot recorded</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="text-center">
+    <%= link_to "Understand what this means", public_service_path(@case.public_service.slug), class: "btn btn-ghost" %>
+  </div>
+</div>

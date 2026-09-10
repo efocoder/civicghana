@@ -3,37 +3,173 @@
 <div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
   <ul>
     <li><%= link_to "Services", root_path %></li>
-    <li><%= link_to "Official / Consolidated Search", public_service_path("official-consolidated-search") %></li>
+    <li><%= link_to @public_service.name, public_service_path(@public_service.slug) %></li>
     <li aria-current="page">Check your application</li>
   </ul>
 </div>
 
+<%= link_to public_service_path(@public_service.slug), class: "btn btn-ghost btn-sm mb-4 gap-1" do %>
+  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+  Back to service guide
+<% end %>
+
 <div class="mx-auto max-w-2xl">
   <div class="mb-8">
-    <p class="mb-2 font-semibold text-primary">Lands Commission</p>
+    <p class="mb-2 font-semibold text-primary"><%= @public_service.institution.country.name %> &middot; <%= @public_service.institution.name %></p>
     <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Check your application</h1>
     <p class="mt-4 text-lg leading-8 text-base-content/75">
-      Compare what you can currently see about your application with the verified public-service information available in CivicRoute.
+      Compare what you can currently see about your application with verified public-service information available in CivicRoute.
     </p>
   </div>
 
-  <div class="card border border-info/30 bg-base-100 shadow-sm">
-    <div class="card-body">
-      <h2 class="card-title">Case assessment is being prepared</h2>
-      <p class="leading-7 text-base-content/75">
-        The tools to help you compare your application details with the verified public-service rule are being built.
-      </p>
+  <div class="alert alert-info mb-8">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 size-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <span>CivicRoute does not access the Lands Commission's internal systems. Enter only information available to you.</span>
+  </div>
+
+  <%= form_with model: @case, class: "space-y-6" do |f| %>
+    <%= f.hidden_field :public_service_id, value: @public_service.id %>
+
+    <div class="card border border-base-300 bg-base-100">
+      <div class="card-body space-y-6">
+        <h2 class="card-title text-xl">Service</h2>
+        <div class="form-control">
+          <input type="text" value="<%= @public_service.name %>" class="input input-bordered" disabled />
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="mt-8">
-    <%= link_to "Back to service guide", public_service_path("official-consolidated-search"), class: "btn btn-outline" %>
-  </div>
+    <div class="card border border-base-300 bg-base-100">
+      <div class="card-body space-y-6">
+        <h2 class="card-title text-xl">Application details</h2>
 
-  <div class="mt-8 rounded-box border border-base-300 bg-base-100 p-6">
-    <p class="text-sm leading-6 text-base-content/60">
-      CivicRoute does not access the Lands Commission's internal systems.
-      You will provide the information currently visible to you when case checking is enabled.
-    </p>
-  </div>
+        <div class="form-control">
+          <%= f.label :application_completed_on, "Application completed date *", class: "label" %>
+          <%= f.date_field :application_completed_on,
+            class: "input input-bordered w-full #{'input-error' if @case.errors[:application_completed_on].any?}",
+            max: Date.current.to_s,
+            required: true %>
+          <% if @case.errors[:application_completed_on].any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @case.errors[:application_completed_on].first %></span>
+            </label>
+          <% end %>
+          <label class="label">
+            <span class="label-text-alt text-base-content/60">Enter the date you finished the application and submitted the required information and supporting documents.</span>
+          </label>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :payment_date, "Payment date", class: "label" %>
+          <%= f.date_field :payment_date,
+            class: "input input-bordered w-full #{'input-error' if @case.errors[:payment_date].any?}",
+            max: Date.current.to_s %>
+          <% if @case.errors[:payment_date].any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @case.errors[:payment_date].first %></span>
+            </label>
+          <% end %>
+          <label class="label">
+            <span class="label-text-alt text-base-content/60">Payment and completion of the full application may happen on different dates. The verified published rule uses payment as its reference point.</span>
+          </label>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :portal_created_on, "Portal Date Created", class: "label" %>
+          <%= f.date_field :portal_created_on,
+            class: "input input-bordered w-full #{'input-error' if @case.errors[:portal_created_on].any?}",
+            max: Date.current.to_s %>
+          <% if @case.errors[:portal_created_on].any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @case.errors[:portal_created_on].first %></span>
+            </label>
+          <% end %>
+          <label class="label">
+            <span class="label-text-alt text-base-content/60">This is the date labelled "Date Created" on the Lands Commission tracking page. It may be different from when you completed your application.</span>
+          </label>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :region, "Region *", class: "label" %>
+          <%= f.select :region,
+            options_for_select(CivicRoute::REGIONS, @case.region),
+            { include_blank: "Select a region" },
+            class: "select select-bordered w-full #{'select-error' if @case.errors[:region].any?}",
+            required: true %>
+          <% if @case.errors[:region].any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @case.errors[:region].first %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100">
+      <div class="card-body space-y-6">
+        <h2 class="card-title text-xl">What does the tracking portal currently show?</h2>
+        <p class="text-sm text-base-content/60">Record the status currently displayed for each tracking milestone.</p>
+
+        <% @tracking_steps.each do |step| %>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold"><%= step.name %></span>
+            </label>
+            <select name="milestones[<%= step.id %>]"
+              class="select select-bordered w-full">
+              <option value="">Select status</option>
+              <% CivicRoute::PORTAL_STATUSES.each do |status| %>
+                <option value="<%= status %>"
+                  <%= "selected" if params.dig(:milestones, step.id.to_s) == status %>>
+                  <%= status %>
+                </option>
+              <% end %>
+            </select>
+          </div>
+        <% end %>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Overall status shown by the portal</span>
+          </label>
+          <input type="text" name="case_observation[overall_status]"
+            value="<%= params.dig(:case_observation, :overall_status) %>"
+            class="input input-bordered w-full"
+            placeholder="Leave blank if not shown" />
+          <label class="label">
+            <span class="label-text-alt text-base-content/60">Leave blank if the tracking page does not show an overall status.</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100">
+      <div class="card-body space-y-6">
+        <h2 class="card-title text-xl">When did you check the portal?</h2>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Portal observation date *</span>
+          </label>
+          <%= date_field_tag "case_observation[observed_on]",
+            params.dig(:case_observation, :observed_on) || Date.current.to_s,
+            class: "input input-bordered w-full",
+            max: Date.current.to_s,
+            required: true %>
+          <% if @observation&.errors&.[](:observed_on)&.any? %>
+            <label class="label">
+              <span class="label-text-alt text-error"><%= @observation.errors[:observed_on].first %></span>
+            </label>
+          <% end %>
+          <label class="label">
+            <span class="label-text-alt text-base-content/60">This allows CivicRoute to record what the public portal displayed on that specific date.</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-actions justify-end">
+      <%= f.submit "Assess my application", class: "btn btn-primary btn-wide" %>
+    </div>
+  <% end %>
 </div>

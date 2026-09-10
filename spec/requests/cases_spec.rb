@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "Cases", type: :request do
+  before { Rails.application.load_seed }
+
   describe "GET /cases/new" do
     it "loads successfully" do
       get new_case_path
