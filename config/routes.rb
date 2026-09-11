@@ -13,6 +13,18 @@ Rails.application.routes.draw do
   resources :cases, only: %i[new create show] do
     resources :observations, only: %i[new create], controller: "case_observations"
     resources :case_actions, only: %i[new create show update]
+
+    resource :assistant, only: [] do
+      post :explain_case
+      post :explain_discrepancy
+      post :explain_action
+      post :refine_draft
+    end
   end
+
+  resource :assistant, only: [] do
+    post :ask
+  end
+
   root "public_services#index"
 end

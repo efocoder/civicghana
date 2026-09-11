@@ -143,6 +143,7 @@
     <orderEntry type="library" scope="PROVIDED" name="ruby-vips (v2.3.0, mise: 3.4.8) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="securerandom (v0.4.1, mise: 3.4.8) [gem]" level="application" />
     <orderEntry type="library" scope="TEST" name="shoulda-matchers (v7.0.1, mise: 3.4.8) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="simple_form (v5.4.1, mise: 3.4.8) [gem]" level="application" />
     <orderEntry type="library" scope="TEST" name="simplecov (v1.2.0, mise: 3.4.8) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="solid_cable (v4.0.2, mise: 3.4.8) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="solid_cache (v1.0.10, mise: 3.4.8) [gem]" level="application" />

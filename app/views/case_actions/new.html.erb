@@ -140,6 +140,21 @@
             Copy full draft
           </button>
         </div>
+
+        <div class="divider"></div>
+
+        <div data-controller="ai" data-ai-url-value="<%= refine_draft_case_assistant_path(@case) %>">
+          <p class="text-sm font-semibold text-base-content/60 mb-2">Improve wording</p>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button data-action="click->ai#refineDraft" data-ai-target="button" data-tone="clearer" class="btn btn-ghost btn-xs">Clearer</button>
+            <button data-action="click->ai#refineDraft" data-ai-target="button" data-tone="shorter" class="btn btn-ghost btn-xs">Shorter</button>
+            <button data-action="click->ai#refineDraft" data-ai-target="button" data-tone="more_formal" class="btn btn-ghost btn-xs">More formal</button>
+            <button data-action="click->ai#refineDraft" data-ai-target="button" data-tone="plain_language" class="btn btn-ghost btn-xs">Plain language</button>
+          </div>
+          <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm"></span>
+          <div data-ai-target="error" class="hidden alert alert-warning mt-2 text-sm"></div>
+          <p class="text-xs text-base-content/40">AI-generated refinement. All facts and dates are preserved.</p>
+        </div>
       </div>
     </div>
   <% end %>

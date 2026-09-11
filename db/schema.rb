@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_10_200100) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_064626) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -177,6 +177,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_200100) do
     t.check_constraint "value >= 0", name: "service_rules_nonnegative_value"
   end
 
+  create_table "source_chunks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "content", null: false
+    t.virtual "content_tsv", type: :tsvector, as: "to_tsvector('english'::regconfig, content)", stored: true
+    t.datetime "created_at", null: false
+    t.string "heading"
+    t.integer "page_number"
+    t.integer "position"
+    t.string "provision"
+    t.string "section_label"
+    t.uuid "source_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content_tsv"], name: "index_source_chunks_on_content_tsv", using: :gin
+    t.index ["provision"], name: "index_source_chunks_on_provision"
+    t.index ["section_label"], name: "index_source_chunks_on_section_label"
+    t.index ["source_id"], name: "index_source_chunks_on_source_id"
+  end
+
   create_table "sources", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "authority_type", null: false
@@ -214,4 +231,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_200100) do
   add_foreign_key "public_services", "institutions"
   add_foreign_key "service_rules", "public_services"
   add_foreign_key "service_rules", "sources"
+  add_foreign_key "source_chunks", "sources"
 end

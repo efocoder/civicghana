@@ -9,6 +9,7 @@ class Source < ApplicationRecord
   has_many :service_rules, dependent: :restrict_with_error
   has_many :process_steps, dependent: :restrict_with_error
   has_many :action_paths, dependent: :restrict_with_error
+  has_many :source_chunks, dependent: :destroy
 
   validates :publisher, :title, :url, :summary, :verified_at, :content_hash, presence: true
   validates :url, uniqueness: true, format: URI::DEFAULT_PARSER.make_regexp(%w[http https])

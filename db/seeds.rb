@@ -147,3 +147,113 @@ end
     active: true
   })
 end
+
+[
+  [
+    sources.fetch(:land_act),
+    "The Lands Commission shall issue the result of an official search within fourteen days after payment of the prescribed fees.",
+    "Section 222",
+    1,
+    "Official Search Duration",
+    nil,
+    "Section 222"
+  ],
+  [
+    sources.fetch(:land_act),
+    "The Land Act, 2020 (Act 1036) governs land administration in Ghana. It establishes the Lands Commission's responsibilities for land registration, survey, valuation, and the resolution of land disputes. The Act sets out the procedures for conducting official searches of registered land.",
+    nil,
+    2,
+    "Land Administration Overview",
+    nil,
+    nil
+  ],
+  [
+    sources.fetch(:land_act),
+    "An official search is a request to the Lands Commission to verify the recorded ownership, encumbrances, and legal status of a parcel of registered land. The search result is a formal document issued by the Commission.",
+    nil,
+    3,
+    "What Is an Official Search",
+    nil,
+    nil
+  ],
+  [
+    sources.fetch(:status_portal),
+    "The Lands Commission Online Services portal allows applicants to check the current status of their application using the assigned job number. The portal displays milestone stages including Quality Control and Coordinate Entry, Records Verification, Report Preparation, and Vetting and Final Approval.",
+    nil,
+    1,
+    "Portal Application Tracking",
+    nil,
+    nil
+  ],
+  [
+    sources.fetch(:status_portal),
+    "The public portal displays milestone statuses such as Pending, Completed, and Not Completed. These statuses reflect what is publicly visible and may not represent the institution's actual internal processing status.",
+    nil,
+    2,
+    "Understanding Portal Statuses",
+    nil,
+    nil
+  ],
+  [
+    sources.fetch(:complaints),
+    "The Lands Commission provides an official Feedback & Complaints channel through its Online Services platform. Citizens can use this channel to report service issues, request clarification on application status, or formally document delays in processing.",
+    nil,
+    1,
+    "Filing a Complaint",
+    nil,
+    nil
+  ],
+  [
+    sources.fetch(:complaints),
+    "When filing a complaint with the Lands Commission, include your application details, relevant dates, and a clear description of the issue. The Commission may request your name, phone number, region, and reference number.",
+    nil,
+    2,
+    "Complaint Requirements",
+    nil,
+    nil
+  ],
+  [
+    sources.fetch(:rti),
+    "The Right to Information Act, 2019 (Act 989) gives citizens the right to access information held by public institutions. The Right to Information Commission oversees compliance and can assist when information requests are denied or delayed.",
+    nil,
+    1,
+    "RTI Overview",
+    nil,
+    nil
+  ],
+  [
+    sources.fetch(:rti),
+    "An RTI request is appropriate when you need access to specific recorded information held by a public institution, such as the current recorded status of your application, what administrative step remains outstanding, or what record explains a delay. RTI is not a complaint mechanism.",
+    nil,
+    2,
+    "When to Use RTI",
+    nil,
+    nil
+  ],
+  [
+    sources.fetch(:chraj),
+    "The Commission on Human Rights and Administrative Justice (CHRAJ) has a mandate to investigate complaints about the administrative actions of public institutions. Citizens can approach CHRAJ when attempts to resolve issues directly with the institution have been unsuccessful.",
+    nil,
+    1,
+    "CHRAJ Mandate",
+    nil,
+    nil
+  ],
+  [
+    sources.fetch(:chraj),
+    "CHRAJ handles complaints about administrative injustice, unfair treatment, delay, omission, or abuse of power by public institutions. Before approaching CHRAJ, citizens are generally expected to have first attempted resolution through the institution's own channels.",
+    nil,
+    2,
+    "When to Approach CHRAJ",
+    nil,
+    nil
+  ]
+].each do |source, content, section_label, position, heading, page_number, provision|
+  SourceChunk.find_or_create_by!(source: source, position: position) do |chunk|
+    chunk.content = content
+    chunk.section_label = section_label
+    chunk.heading = heading
+    chunk.page_number = page_number
+    chunk.provision = provision
+  end
+end
