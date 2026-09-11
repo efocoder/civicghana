@@ -1,4 +1,5 @@
 class ProcessStep < ApplicationRecord
+  include CatalogTranslatable
   belongs_to :public_service
   belongs_to :source, optional: true
 

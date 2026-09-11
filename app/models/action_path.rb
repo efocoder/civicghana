@@ -1,4 +1,5 @@
 class ActionPath < ApplicationRecord
+  include CatalogTranslatable
   enum :action_type, {
     check: "check",
     verify: "verify",

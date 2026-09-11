@@ -1,13 +1,13 @@
 class PublicServicesController < ApplicationController
   def index
-    @public_services = PublicService.includes(institution: :country)
+    @public_services = PublicService.includes(:catalog_translations, institution: [:catalog_translations, :country])
       .joins(institution: :country)
       .where(active: true, institutions: { active: true }, countries: { active: true })
       .order("countries.name", "institutions.name", "public_services.name")
   end
 
   def show
-    @public_service = PublicService.includes(:process_steps, :action_paths, institution: :country)
+    @public_service = PublicService.includes(:catalog_translations, :action_paths, process_steps: :catalog_translations, institution: [:catalog_translations, :country])
       .find_by!(slug: params[:slug], active: true)
     @duration_rule = ServiceRules::Resolver.call(
       public_service: @public_service,

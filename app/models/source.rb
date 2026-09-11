@@ -1,4 +1,5 @@
 class Source < ApplicationRecord
+  include CatalogTranslatable
   enum :authority_type, {
     legislation: "legislation",
     official_service: "official_service",

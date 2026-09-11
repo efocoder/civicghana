@@ -1,4 +1,5 @@
 class ActionResource < ApplicationRecord
+  include CatalogTranslatable
   belongs_to :institution
   belongs_to :source, optional: true
 

@@ -1,30 +1,63 @@
 <% content_for :title, "#{t('homepage.tagline')} | #{t('civicroute.app_name')}" %>
 
-<section class="mx-auto max-w-3xl">
-  <div class="mb-10">
-    <div class="badge badge-primary badge-outline mb-4"><%= t("homepage.tagline") %></div>
-    <h1 class="text-3xl font-bold tracking-tight sm:text-5xl"><%= t("homepage.headline") %></h1>
-    <p class="mt-4 max-w-2xl text-lg leading-8 text-base-content/75">
-      <%= t("homepage.subtitle") %>
-    </p>
+<section class="mx-auto max-w-6xl">
+  <div class="hero bg-base-100 rounded-2xl border border-base-300 mb-10 overflow-hidden">
+    <div class="hero-content flex-col lg:flex-row gap-8 lg:gap-12 py-10 lg:py-16 px-6 lg:px-12 w-full">
+      <div class="flex-1">
+        <div class="badge badge-primary badge-outline mb-4"><%= t("homepage.tagline") %></div>
+        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl leading-tight"><%= t("homepage.headline") %></h1>
+        <p class="mt-4 text-lg leading-8 text-base-content/75 max-w-xl">
+          <%= t("homepage.subtitle") %>
+        </p>
+        <div class="flex flex-wrap gap-3 mt-6">
+          <%= link_to t("homepage.view_guide"), public_service_path(@public_services.first&.slug || "official-consolidated-search"), class: "btn btn-primary" %>
+          <%= link_to "Check an application", new_case_path, class: "btn btn-outline" %>
+        </div>
+      </div>
+      <div class="flex-shrink-0 w-full lg:w-80">
+        <div class="card bg-base-200 border border-base-300">
+          <div class="card-body p-5">
+            <h3 class="card-title text-sm text-base-content/60 mb-3">How CivicRoute works</h3>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content text-xs font-bold">1</span>
+                <p class="text-sm text-base-content/80">See the verified published rule</p>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content text-xs font-bold">2</span>
+                <p class="text-sm text-base-content/80">Compare portal snapshots with updates</p>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content text-xs font-bold">3</span>
+                <p class="text-sm text-base-content/80">Detect discrepancies automatically</p>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content text-xs font-bold">4</span>
+                <p class="text-sm text-base-content/80">Get a verified next action</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-base-content/60"><%= t("homepage.available_services") %></h2>
+  <h2 class="mb-6 text-sm font-semibold uppercase tracking-wider text-base-content/60"><%= t("homepage.available_services") %></h2>
 
-  <div class="grid gap-4">
+  <div class="grid gap-6 md:grid-cols-2">
     <% @public_services.each do |service| %>
-      <article class="card border border-base-300 bg-base-100 shadow-sm">
+      <article class="card border border-base-300 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
         <div class="card-body gap-4">
           <div class="flex flex-wrap items-center gap-2 text-sm">
             <span class="badge badge-neutral"><%= service.institution.country.name %></span>
-            <span class="text-base-content/60"><%= service.institution.name %></span>
+            <span class="text-base-content/60"><%= service.institution.translated_name %></span>
           </div>
           <div>
-            <h3 class="card-title text-2xl"><%= service.name %></h3>
-            <p class="mt-2 leading-7 text-base-content/75"><%= service.description %></p>
+            <h3 class="card-title text-xl lg:text-2xl"><%= service.translated_name %></h3>
+            <p class="mt-2 leading-7 text-base-content/75 text-sm lg:text-base"><%= service.translated_description %></p>
           </div>
           <div class="card-actions justify-end">
-            <%= link_to t("homepage.view_guide"), public_service_path(service.slug), class: "btn btn-primary" %>
+            <%= link_to t("homepage.view_guide"), public_service_path(service.slug), class: "btn btn-primary btn-sm" %>
           </div>
         </div>
       </article>

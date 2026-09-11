@@ -1,8 +1,10 @@
 class CasesController < ApplicationController
   def new
     @case = Case.new
-    @public_service = PublicService.find_by!(slug: params[:service_slug] || "official-consolidated-search")
+    @public_service = PublicService.includes(:catalog_translations, process_steps: :catalog_translations, institution: [:catalog_translations, :country]).find_by!(slug: params[:service_slug] || "official-consolidated-search")
     @tracking_steps = @public_service.process_steps.where("sequence >= 4").order(:sequence)
+    @regions = @public_service.institution.country.regions.active.order(:name)
+    @portal_statuses = @public_service.portal_statuses.active
   end
 
   def create
@@ -11,11 +13,15 @@ class CasesController < ApplicationController
     unless @public_service
       @case.errors.add(:public_service, "must be a valid active service")
       @tracking_steps = []
+      @regions = []
+      @portal_statuses = []
       return render :new, status: :unprocessable_entity
     end
 
     @case.public_service = @public_service
     @tracking_steps = @public_service.process_steps.where("sequence >= 4").order(:sequence)
+    @regions = @public_service.institution.country.regions.active.order(:name)
+    @portal_statuses = @public_service.portal_statuses.active
     @observation = @case.case_observations.build(observation_params)
     submitted_milestones.each do |step_id, status|
       @observation.case_milestone_observations.build(process_step_id: step_id, status: status)
@@ -86,7 +92,7 @@ class CasesController < ApplicationController
 
     milestone_params.filter_map do |step_id, status|
       next if status.blank? || !allowed_ids.include?(step_id.to_s)
-      next unless CivicRoute::PORTAL_STATUSES.include?(status)
+      next unless @portal_statuses.any? { |record| record.name == status || record.code == status }
 
       [ step_id, status ]
     end

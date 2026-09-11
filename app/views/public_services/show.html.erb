@@ -1,10 +1,10 @@
-<% content_for :title, "#{@public_service.name} | CivicRoute Ghana" %>
+<% content_for :title, "#{@public_service.translated_name} | CivicRoute Ghana" %>
 
 <div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
   <ul>
     <li><%= link_to "Services", root_path %></li>
-    <li><%= @public_service.institution.name %></li>
-    <li aria-current="page"><%= @public_service.name %></li>
+    <li><%= @public_service.institution.translated_name %></li>
+    <li aria-current="page"><%= @public_service.translated_name %></li>
   </ul>
 </div>
 
@@ -16,9 +16,9 @@
 <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
   <section>
     <div class="mb-8">
-      <p class="mb-2 font-semibold text-primary"><%= @public_service.institution.country.name %> · <%= @public_service.institution.name %></p>
-      <h1 class="text-3xl font-bold tracking-tight sm:text-5xl"><%= @public_service.name %></h1>
-      <p class="mt-4 max-w-3xl text-lg leading-8 text-base-content/75"><%= @public_service.description %></p>
+      <p class="mb-2 font-semibold text-primary"><%= @public_service.institution.country.name %> · <%= @public_service.institution.translated_name %></p>
+      <h1 class="text-3xl font-bold tracking-tight sm:text-5xl"><%= @public_service.translated_name %></h1>
+      <p class="mt-4 max-w-3xl text-lg leading-8 text-base-content/75"><%= @public_service.translated_description %></p>
     </div>
 
     <% if @duration_rule %>
@@ -120,8 +120,8 @@
           <li class="flex gap-4 rounded-box border border-base-300 bg-base-100 p-4">
             <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-content"><%= step.sequence %></span>
             <div>
-              <h3 class="font-semibold"><%= step.name %></h3>
-              <p class="mt-1 text-sm leading-6 text-base-content/70"><%= step.description %></p>
+              <h3 class="font-semibold"><%= step.translated_name %></h3>
+              <p class="mt-1 text-sm leading-6 text-base-content/70"><%= step.translated_description %></p>
             </div>
           </li>
         <% end %>

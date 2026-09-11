@@ -79,6 +79,33 @@ official_search.update!({
   active: true
 })
 
+def ensure_catalog_translation(record, locale: "en", attributes: {})
+  translation = record.catalog_translations.find_or_initialize_by(locale: locale)
+  translation.update!(attributes)
+end
+
+ensure_catalog_translation(lands_commission, attributes: { name: lands_commission.name, description: lands_commission.description })
+ensure_catalog_translation(official_search, attributes: { name: official_search.name, description: official_search.description })
+
+CivicRoute::REGIONS.each do |name|
+  Region.find_or_create_by!(country: ghana, code: name.parameterize, name: name) { |r| r.active = true }
+end
+
+CivicRoute::PORTAL_STATUSES.each_with_index do |name, index|
+  PortalStatus.find_or_create_by!(public_service: official_search, code: name.parameterize, name: name) do |s|
+    s.position = index
+    s.active = true
+  end
+end
+
+CivicRoute::EVIDENCE_SOURCES.each do |code, name|
+  EvidenceSource.find_or_create_by!(code: code.to_s, name: name) { |e| e.active = true }
+end
+
+CivicRoute::PROGRESS_CLAIMS.each do |code, name|
+  ProgressClaim.find_or_create_by!(code: code.to_s, name: name) { |p| p.active = true }
+end
+
 [
   [1, "Submit and pay", "Submit the official-search request and pay the prescribed fees.", sources.fetch(:land_act)],
   [2, "Track the public status", "Use the Lands Commission application-status page to observe the milestone currently visible to you.", sources.fetch(:status_portal)],

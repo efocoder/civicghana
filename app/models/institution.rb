@@ -1,4 +1,5 @@
 class Institution < ApplicationRecord
+  include CatalogTranslatable
   belongs_to :country
   has_many :public_services, dependent: :restrict_with_error
 

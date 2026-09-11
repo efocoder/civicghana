@@ -4,11 +4,13 @@ class CaseObservationsController < ApplicationController
   def new
     @observation = @case.case_observations.build(observed_on: Date.current)
     @tracking_steps = @case.public_service.process_steps.where("sequence >= 4").order(:sequence)
+    @portal_statuses = @case.public_service.portal_statuses.active
   end
 
   def create
     @observation = @case.case_observations.build(observation_params)
     @tracking_steps = @case.public_service.process_steps.where("sequence >= 4").order(:sequence)
+    @portal_statuses = @case.public_service.portal_statuses.active
     milestones = submitted_milestones
 
     milestones.each do |step_id, status|
@@ -51,7 +53,7 @@ class CaseObservationsController < ApplicationController
 
     params.fetch(:milestones, {}).to_unsafe_h.filter_map do |step_id, status|
       next if status.blank? || !allowed_ids.include?(step_id.to_s)
-      next unless CivicRoute::PORTAL_STATUSES.include?(status)
+      next unless @portal_statuses.any? { |record| record.name == status || record.code == status }
 
       [ step_id, status ]
     end

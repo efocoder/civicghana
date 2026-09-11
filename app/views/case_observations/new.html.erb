@@ -138,7 +138,8 @@
             <select name="milestones[<%= step.id %>]"
               class="select select-bordered w-full">
               <option value="">Select status</option>
-              <% CivicRoute::PORTAL_STATUSES.each do |status| %>
+              <% @portal_statuses.each do |status_record| %>
+                <% status = status_record.name %>
                 <option value="<%= status %>"><%= status %></option>
               <% end %>
             </select>

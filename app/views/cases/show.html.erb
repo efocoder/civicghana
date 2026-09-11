@@ -13,652 +13,581 @@
   Back to service guide
 <% end %>
 
-<div class="mx-auto max-w-3xl">
-  <div class="mb-8">
-    <p class="mb-2 font-semibold text-primary"><%= @case.public_service.institution.country.name %> &middot; <%= @case.public_service.institution.name %></p>
-    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Application assessment</h1>
-  </div>
-
-  <div class="flex flex-wrap gap-2 mb-6">
+<div class="mb-6">
+  <p class="mb-2 font-semibold text-primary"><%= @case.public_service.institution.country.name %> &middot; <%= @case.public_service.institution.name %></p>
+  <div class="flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">Application assessment</h1>
     <%= link_to new_case_observation_path(@case), class: "btn btn-outline btn-sm gap-1" do %>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
       Record an update
     <% end %>
   </div>
+</div>
 
-  <div class="card border border-base-300 bg-base-100 mb-6">
-    <div class="card-body">
-      <h2 class="card-title text-lg">Evidence summary</h2>
-      <div class="flex flex-wrap gap-4 mt-2">
-        <div class="stat p-0">
-          <div class="stat-title">Total evidence</div>
-          <div class="stat-value text-lg"><%= @evidence_counts[:total] %></div>
-        </div>
-        <div class="stat p-0">
-          <div class="stat-title">Portal snapshots</div>
-          <div class="stat-value text-lg"><%= @evidence_counts[:portal] %></div>
-        </div>
-        <div class="stat p-0">
-          <div class="stat-title">Institutional updates</div>
-          <div class="stat-value text-lg"><%= @evidence_counts[:non_portal] %></div>
+<div class="grid gap-6 xl:grid-cols-[1fr_22rem]">
+
+  <div class="min-w-0">
+
+    <% if @rule_result.assessment_state == :insufficient_information %>
+      <div class="card border border-warning/30 bg-base-100 shadow-sm mb-6">
+        <div class="card-body">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="badge badge-warning gap-1">Insufficient information</span>
+            <span class="badge badge-ghost">CivicRoute calculation</span>
+          </div>
+          <h2 class="card-title text-xl mb-3">Published rule cannot be calculated</h2>
+          <p class="leading-7 text-base-content/75">
+            The verified published rule is measured from <%= @rule_result.rule_anchor_event.humanize.downcase %>,
+            but no <%= @rule_result.rule_anchor_event.humanize.downcase %> date was provided.
+          </p>
+          <div class="divider my-2"></div>
+          <p class="text-sm text-base-content/60">
+            Published rule: <%= @rule_result.published_days %> <%= @rule_result.service_rule.unit %>
+          </p>
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="card border border-base-300 bg-base-100 mb-8">
-    <div class="card-body">
-      <h2 class="card-title text-lg">Case information</h2>
-      <dl class="grid gap-4 text-sm sm:grid-cols-2 mt-4">
-        <div>
-          <dt class="font-semibold text-base-content/60">Service</dt>
-          <dd class="mt-1"><%= @case.public_service.name %></dd>
-        </div>
-        <div>
-          <dt class="font-semibold text-base-content/60">Region</dt>
-          <dd class="mt-1"><%= @case.region %></dd>
-        </div>
-        <div>
-          <dt class="font-semibold text-base-content/60">Application completed</dt>
-          <dd class="mt-1"><%= l(@case.application_completed_on, format: :long) %></dd>
-        </div>
-        <% if @case.payment_date %>
-          <div>
-            <dt class="font-semibold text-base-content/60">Payment</dt>
-            <dd class="mt-1"><%= l(@case.payment_date, format: :long) %></dd>
-          </div>
+    <% else %>
+      <div class="card border
+        <% if @rule_result.assessment_state == :within_timeframe %>
+          border-info/30
+        <% elsif @rule_result.assessment_state == :due_today %>
+          border-warning/30
+        <% else %>
+          border-error/30
         <% end %>
-        <% if @case.portal_created_on %>
-          <div>
-            <dt class="font-semibold text-base-content/60">Portal Date Created</dt>
-            <dd class="mt-1"><%= l(@case.portal_created_on, format: :long) %></dd>
+        bg-base-100 shadow-sm mb-6">
+        <div class="card-body">
+          <div class="flex items-center gap-2 mb-3">
+            <% if @rule_result.assessment_state == :within_timeframe %>
+              <span class="badge badge-info gap-1">Within timeframe</span>
+            <% elsif @rule_result.assessment_state == :due_today %>
+              <span class="badge badge-warning gap-1">Due today</span>
+            <% else %>
+              <span class="badge badge-error gap-1">Timeframe exceeded</span>
+            <% end %>
+            <span class="badge badge-ghost">CivicRoute calculation</span>
           </div>
-        <% end %>
-        <div>
-          <dt class="font-semibold text-base-content/60">Portal observed</dt>
-          <dd class="mt-1"><%= l(@latest_portal.observed_on, format: :long) %></dd>
-        </div>
-      </dl>
-    </div>
-  </div>
 
-  <div class="card border border-base-300 bg-base-100 mb-8">
-    <div class="card-body">
-      <h2 class="card-title text-lg">Your application timeline</h2>
-      <dl class="grid gap-4 text-sm sm:grid-cols-2 mt-4">
-        <div>
-          <dt class="font-semibold text-base-content/60">Application completed</dt>
-          <dd class="mt-1"><%= l(@lifecycle.application_completed_on, format: :long) %></dd>
-        </div>
-        <div>
-          <dt class="font-semibold text-base-content/60">Portal observed</dt>
-          <dd class="mt-1"><%= l(@lifecycle.observed_on, format: :long) %></dd>
-        </div>
-        <div>
-          <dt class="font-semibold text-base-content/60">Time since completed application</dt>
-          <dd class="mt-1"><%= @lifecycle.days_since_completed_application %> days</dd>
-        </div>
-      </dl>
-    </div>
-  </div>
+          <h2 class="card-title text-xl mb-3">
+            <% if @rule_result.assessment_state == :within_timeframe %>
+              Within published timeframe
+            <% elsif @rule_result.assessment_state == :due_today %>
+              Published timeframe reached today
+            <% else %>
+              Published timeframe exceeded
+            <% end %>
+          </h2>
 
-  <% if @rule_result.assessment_state == :insufficient_information %>
-    <div class="card border border-warning/30 bg-base-100 shadow-sm mb-8">
-      <div class="card-body">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="badge badge-warning gap-1">Insufficient information</span>
-          <span class="badge badge-ghost">CivicRoute calculation</span>
-        </div>
-        <h2 class="card-title text-2xl mb-4">Published rule cannot be calculated</h2>
-        <p class="leading-7 text-base-content/75">
-          The verified published rule is measured from <%= @rule_result.rule_anchor_event.humanize.downcase %>,
-          but no <%= @rule_result.rule_anchor_event.humanize.downcase %> date was provided.
-        </p>
-        <div class="divider"></div>
-        <p class="text-sm text-base-content/60">
-          Published rule: <%= @rule_result.published_days %> <%= @rule_result.service_rule.unit %>
-        </p>
-      </div>
-    </div>
-  <% else %>
-    <div class="card border
-      <% if @rule_result.assessment_state == :within_timeframe %>
-        border-info/30
-      <% elsif @rule_result.assessment_state == :due_today %>
-        border-warning/30
-      <% else %>
-        border-error/30
-      <% end %>
-      bg-base-100 shadow-sm mb-8">
-      <div class="card-body">
-        <div class="flex items-center gap-2 mb-4">
-          <% if @rule_result.assessment_state == :within_timeframe %>
-            <span class="badge badge-info gap-1">Within timeframe</span>
-          <% elsif @rule_result.assessment_state == :due_today %>
-            <span class="badge badge-warning gap-1">Due today</span>
-          <% else %>
-            <span class="badge badge-error gap-1">Timeframe exceeded</span>
-          <% end %>
-          <span class="badge badge-ghost">CivicRoute calculation</span>
-        </div>
+          <p class="leading-7 text-base-content/75 mb-4">
+            <% if @rule_result.assessment_state == :within_timeframe %>
+              Based on the verified published rule, the applicable timeframe has not yet elapsed.
+            <% elsif @rule_result.assessment_state == :due_today %>
+              Based on the verified published rule, the applicable timeframe ends today.
+            <% else %>
+              Based on the verified published rule, the applicable timeframe had elapsed by this assessment date.
+            <% end %>
+          </p>
 
-        <h2 class="card-title text-2xl mb-4">
-          <% if @rule_result.assessment_state == :within_timeframe %>
-            Within published timeframe
-          <% elsif @rule_result.assessment_state == :due_today %>
-            Published timeframe reached today
-          <% else %>
-            Published timeframe exceeded
-          <% end %>
-        </h2>
+          <div class="divider my-2"></div>
 
-        <p class="leading-7 text-base-content/75 mb-6">
-          <% if @rule_result.assessment_state == :within_timeframe %>
-            Based on the verified published rule, the applicable timeframe has not yet elapsed.
-          <% elsif @rule_result.assessment_state == :due_today %>
-            Based on the verified published rule, the applicable timeframe ends today.
-          <% else %>
-            Based on the verified published rule, the applicable timeframe had elapsed by this assessment date.
-          <% end %>
-        </p>
-
-        <div class="divider"></div>
-
-        <dl class="grid gap-4 text-sm sm:grid-cols-2">
-          <div>
-            <dt class="font-semibold">Published rule</dt>
-            <dd class="mt-1 text-base-content/70"><%= @rule_result.published_days %> <%= @rule_result.service_rule.unit %></dd>
-          </div>
-          <div>
-            <dt class="font-semibold">Rule anchor</dt>
-            <dd class="mt-1 text-base-content/70"><%= @rule_result.rule_anchor_event.humanize %> &mdash; <%= l(@rule_result.rule_anchor_date, format: :long) %></dd>
-          </div>
-          <div>
-            <dt class="font-semibold">Published timeframe reached</dt>
-            <dd class="mt-1 text-base-content/70"><%= l(@rule_result.deadline, format: :long) %></dd>
-          </div>
-          <div>
-            <dt class="font-semibold">Assessment date</dt>
-            <dd class="mt-1 text-base-content/70"><%= l(@rule_result.assessment_date, format: :long) %></dd>
-          </div>
-          <% if @rule_result.assessment_state == :within_timeframe %>
+          <dl class="grid gap-3 text-sm grid-cols-2 lg:grid-cols-3">
             <div>
-              <dt class="font-semibold">Days remaining</dt>
-              <dd class="mt-1 text-base-content/70"><%= @rule_result.days_remaining %> days</dd>
+              <dt class="font-semibold">Published rule</dt>
+              <dd class="mt-1 text-base-content/70"><%= @rule_result.published_days %> <%= @rule_result.service_rule.unit %></dd>
             </div>
-          <% elsif @rule_result.assessment_state == :timeframe_exceeded %>
             <div>
-              <dt class="font-semibold">Days beyond published timeframe</dt>
-              <dd class="mt-1 text-base-content/70"><%= @rule_result.days_beyond %> days</dd>
+              <dt class="font-semibold">Rule anchor</dt>
+              <dd class="mt-1 text-base-content/70"><%= @rule_result.rule_anchor_event.humanize %><br><%= l(@rule_result.rule_anchor_date, format: :long) %></dd>
             </div>
-          <% end %>
-        </dl>
+            <div>
+              <dt class="font-semibold">Deadline</dt>
+              <dd class="mt-1 text-base-content/70"><%= l(@rule_result.deadline, format: :long) %></dd>
+            </div>
+            <div>
+              <dt class="font-semibold">Assessment date</dt>
+              <dd class="mt-1 text-base-content/70"><%= l(@rule_result.assessment_date, format: :long) %></dd>
+            </div>
+            <% if @rule_result.assessment_state == :within_timeframe %>
+              <div>
+                <dt class="font-semibold">Days remaining</dt>
+                <dd class="mt-1 text-base-content/70"><%= @rule_result.days_remaining %> days</dd>
+              </div>
+            <% elsif @rule_result.assessment_state == :timeframe_exceeded %>
+              <div>
+                <dt class="font-semibold">Days beyond</dt>
+                <dd class="mt-1 text-base-content/70"><%= @rule_result.days_beyond %> days</dd>
+              </div>
+            <% end %>
+          </dl>
 
-        <div class="divider"></div>
+          <div class="divider my-2"></div>
 
-        <p class="text-sm text-base-content/60">
-          Based on: <%= @rule_result.source.title %>, <%= @rule_result.source.section_label %>
-        </p>
-      </div>
-    </div>
-  <% end %>
-
-  <div class="mb-8" data-controller="ai" data-ai-url-value="<%= explain_case_case_assistant_path(@case) %>">
-    <button data-action="click->ai#explainCase" data-ai-target="button" class="btn btn-ghost btn-sm gap-1">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
-      <%= t("ai.explain_assessment") %>
-    </button>
-    <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm ml-2"></span>
-    <div data-ai-target="error" class="hidden alert alert-warning mt-3 text-sm"></div>
-    <div data-ai-target="response" class="hidden card border border-info/30 bg-base-100 mt-3" data-controller="tts">
-      <div class="card-body">
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-xs text-base-content/40"><%= t("ai.ai_label") %></p>
-          <button data-action="click->tts#speak" data-tts-target="button" class="btn btn-ghost btn-xs gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>
-            Listen
-          </button>
-        </div>
-        <p data-ai-target="answer" data-tts-target="text" class="text-sm text-base-content/80 whitespace-pre-wrap"></p>
-        <div data-ai-target="sources" class="mt-3 pt-3 border-t border-base-300">
-          <p class="text-xs font-semibold text-base-content/50 mb-1"><%= t("ai.sources_used") %></p>
+          <p class="text-xs text-base-content/50">
+            Based on: <%= @rule_result.source.title %>, <%= @rule_result.source.section_label %>
+          </p>
         </div>
       </div>
-    </div>
-  </div>
+    <% end %>
 
-  <% if @evidence_comparison.status != :no_comparison %>
-    <div class="card border
-      <% case @evidence_comparison.status %>
-      <% when :consistent %>
-        border-success/30
-      <% when :possible_discrepancy, :possible_stale_public_status %>
-        border-error/30
-      <% when :portal_unchanged %>
-        border-warning/30
-      <% else %>
-        border-base-300
-      <% end %>
-      bg-base-100 mb-8">
-      <div class="card-body">
-        <div class="flex items-center gap-2 mb-4">
+    <div class="mb-6" data-controller="ai" data-ai-url-value="<%= explain_case_case_assistant_path(@case) %>">
+      <button data-action="click->ai#explainCase" data-ai-target="button" class="btn btn-ghost btn-sm gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
+        <%= t("ai.explain_assessment") %>
+      </button>
+      <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm ml-2"></span>
+      <div data-ai-target="error" class="hidden alert alert-warning mt-3 text-sm"></div>
+      <div data-ai-target="response" class="hidden card border border-info/30 bg-base-100 mt-3" data-controller="tts">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs text-base-content/40"><%= t("ai.ai_label") %></p>
+            <button data-action="click->tts#speak" data-tts-target="button" class="btn btn-ghost btn-xs gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>
+              Listen
+            </button>
+          </div>
+          <p data-ai-target="answer" data-tts-target="text" class="text-sm text-base-content/80 whitespace-pre-wrap"></p>
+          <div data-ai-target="sources" class="mt-3 pt-3 border-t border-base-300">
+            <p class="text-xs font-semibold text-base-content/50 mb-1"><%= t("ai.sources_used") %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% if @evidence_comparison.status != :no_comparison %>
+      <% evidence_border = case @evidence_comparison.status
+         when :consistent then "border-success/30"
+         when :possible_discrepancy, :possible_stale_public_status then "border-error/30"
+         when :portal_unchanged then "border-warning/30"
+         else "border-base-300"
+         end %>
+      <div class="card border <%= evidence_border %> bg-base-100 mb-6">
+        <div class="card-body">
+          <div class="flex items-center gap-2 mb-3">
+            <% case @evidence_comparison.status %>
+            <% when :consistent %>
+              <span class="badge badge-success gap-1">Consistent</span>
+            <% when :possible_discrepancy %>
+              <span class="badge badge-error gap-1">Possible discrepancy</span>
+            <% when :portal_unchanged %>
+              <span class="badge badge-warning gap-1">Portal unchanged</span>
+            <% when :possible_stale_public_status %>
+              <span class="badge badge-error gap-1">Possible stale public status</span>
+            <% when :insufficient_information %>
+              <span class="badge badge-ghost gap-1">Insufficient information</span>
+            <% end %>
+            <span class="badge badge-ghost">Evidence comparison</span>
+          </div>
+
+          <% evidence_title = case @evidence_comparison.status
+             when :consistent then "Evidence appears consistent"
+             when :possible_discrepancy then "Possible public-status discrepancy"
+             when :portal_unchanged then "Portal information unchanged"
+             when :possible_stale_public_status then "Possible stale public status"
+             when :insufficient_information then "Cannot compare evidence structurally"
+             end %>
+          <h2 class="card-title text-lg mb-3"><%= evidence_title %></h2>
+
           <% case @evidence_comparison.status %>
           <% when :consistent %>
-            <span class="badge badge-success gap-1">Consistent</span>
+            <p class="leading-7 text-base-content/75 text-sm">
+              The institutional update you recorded appears consistent with the latest portal snapshot.
+            </p>
           <% when :possible_discrepancy %>
-            <span class="badge badge-error gap-1">Possible discrepancy</span>
+            <p class="leading-7 text-base-content/75 mb-2 text-sm">
+              The update you recorded describes your application as being at a later stage than what the latest portal snapshot shows.
+            </p>
+            <p class="text-xs text-base-content/50">
+              CivicRoute cannot determine the institution's actual internal status.
+            </p>
           <% when :portal_unchanged %>
-            <span class="badge badge-warning gap-1">Portal unchanged</span>
+            <p class="leading-7 text-base-content/75 text-sm">
+              The public portal information you recorded did not change between the two observation dates.
+            </p>
           <% when :possible_stale_public_status %>
-            <span class="badge badge-error gap-1">Possible stale public status</span>
+            <p class="leading-7 text-base-content/75 mb-2 text-sm">
+              The public portal information recorded on <%= l(@evidence_comparison.portal_observation.observed_on, format: :long) %> is unchanged from the snapshot recorded on <%= l(@evidence_comparison.comparison_observation.observed_on, format: :long) %>.
+            </p>
+            <p class="leading-7 text-base-content/75 mb-2 text-sm">
+              Between those observations, you recorded a <%= CivicRoute::EVIDENCE_PROVENANCE_LABELS[@evidence_comparison.comparison_observation.observation_type.to_sym]&.downcase %> describing the application as <%= @evidence_comparison.comparison_observation.progress_claim.humanize.downcase %>.
+            </p>
+            <p class="text-xs text-base-content/50">
+              CivicRoute cannot determine the Lands Commission's actual internal status.
+            </p>
           <% when :insufficient_information %>
-            <span class="badge badge-ghost gap-1">Insufficient information</span>
+            <p class="leading-7 text-base-content/75 text-sm">
+              The evidence cannot be structurally compared at this time.
+            </p>
           <% end %>
-          <span class="badge badge-ghost">Evidence comparison</span>
-        </div>
 
-        <h2 class="card-title text-xl mb-4">
-          <% case @evidence_comparison.status %>
-          <% when :consistent %>
-            Evidence appears consistent
-          <% when :possible_discrepancy %>
-            Possible public-status discrepancy
-          <% when :portal_unchanged %>
-            Portal information unchanged
-          <% when :possible_stale_public_status %>
-            Possible stale public status
-          <% when :insufficient_information %>
-            Cannot compare evidence structurally
-          <% end %>
-        </h2>
-
-        <% case @evidence_comparison.status %>
-        <% when :consistent %>
-          <p class="leading-7 text-base-content/75">
-            The institutional update you recorded appears consistent with the latest portal snapshot.
-          </p>
-        <% when :possible_discrepancy %>
-          <p class="leading-7 text-base-content/75 mb-4">
-            The update you recorded describes your application as being at a later stage than what the latest portal snapshot shows.
-          </p>
-          <p class="text-sm text-base-content/60">
-            CivicRoute cannot determine the institution's actual internal status.
-          </p>
-        <% when :portal_unchanged %>
-          <p class="leading-7 text-base-content/75">
-            The public portal information you recorded did not change between the two observation dates.
-          </p>
-        <% when :possible_stale_public_status %>
-          <p class="leading-7 text-base-content/75 mb-4">
-            The public portal information recorded on <%= l(@evidence_comparison.portal_observation.observed_on, format: :long) %> is unchanged from the snapshot recorded on <%= l(@evidence_comparison.comparison_observation.observed_on, format: :long) %>.
-          </p>
-          <p class="leading-7 text-base-content/75 mb-4">
-            Between those observations, you recorded a <%= CivicRoute::EVIDENCE_PROVENANCE_LABELS[@evidence_comparison.comparison_observation.observation_type.to_sym]&.downcase %> describing the application as <%= @evidence_comparison.comparison_observation.progress_claim.humanize.downcase %>.
-          </p>
-          <p class="leading-7 text-base-content/75 mb-4">
-            The public portal may therefore not reflect the more recent progress communicated to you.
-          </p>
-          <p class="text-sm text-base-content/60">
-            CivicRoute cannot determine the Lands Commission's actual internal status.
-          </p>
-        <% when :insufficient_information %>
-          <p class="leading-7 text-base-content/75">
-            The evidence cannot be structurally compared at this time.
-          </p>
-        <% end %>
-
-        <div class="mt-4" data-controller="ai" data-ai-url-value="<%= explain_discrepancy_case_assistant_path(@case) %>">
-          <button data-action="click->ai#explainCase" data-ai-target="button" class="btn btn-ghost btn-sm gap-1">
-            Explain this comparison
-          </button>
-          <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm ml-2"></span>
-          <div data-ai-target="error" class="hidden alert alert-warning mt-3 text-sm"></div>
-          <div data-ai-target="response" class="hidden card border border-info/30 bg-base-100 mt-3">
-            <div class="card-body">
-              <p class="text-xs text-base-content/40 mb-2">AI-generated explanation based on verified CivicRoute sources</p>
-              <p data-ai-target="answer" class="text-sm text-base-content/80 whitespace-pre-wrap"></p>
-              <div data-ai-target="sources" class="mt-3 pt-3 border-t border-base-300">
-                <p class="text-xs font-semibold text-base-content/50 mb-1">Verified sources used</p>
+          <div class="mt-3" data-controller="ai" data-ai-url-value="<%= explain_discrepancy_case_assistant_path(@case) %>">
+            <button data-action="click->ai#explainCase" data-ai-target="button" class="btn btn-ghost btn-xs gap-1">
+              Explain this comparison
+            </button>
+            <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm ml-2"></span>
+            <div data-ai-target="error" class="hidden alert alert-warning mt-2 text-xs"></div>
+            <div data-ai-target="response" class="hidden card border border-info/30 bg-base-100 mt-2">
+              <div class="card-body p-4">
+                <p class="text-xs text-base-content/40 mb-2">AI-generated explanation based on verified CivicRoute sources</p>
+                <p data-ai-target="answer" class="text-sm text-base-content/80 whitespace-pre-wrap"></p>
+                <div data-ai-target="sources" class="mt-2 pt-2 border-t border-base-300">
+                  <p class="text-xs font-semibold text-base-content/50 mb-1">Verified sources used</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  <% end %>
-
-  <div class="card border border-base-300 bg-base-100 mb-8">
-    <div class="card-body">
-      <h2 class="card-title text-lg">What do you need now?</h2>
-      <p class="text-sm text-base-content/70">Choose the kind of help you need to see the most relevant verified option.</p>
-      <div class="flex flex-wrap gap-2 mt-3">
-        <%= link_to "A clearer status or update", case_path(@case, need: "status_update"), class: "btn btn-outline btn-sm" %>
-        <%= link_to "Resolution of a service problem", case_path(@case, need: "service_problem"), class: "btn btn-outline btn-sm" %>
-        <%= link_to "Access to specific records", case_path(@case, need: "specific_information"), class: "btn btn-outline btn-sm" %>
-      </div>
-    </div>
-  </div>
-
-  <div class="card border
-    <% if @action_recommendation.action_type.to_s == "monitor" %>
-      border-info/30
-    <% else %>
-      border-primary/30
     <% end %>
-    bg-base-100 shadow-sm mb-8">
-    <div class="card-body">
-      <div class="flex items-center gap-2 mb-4">
-        <span class="badge badge-primary gap-1">Recommended next step</span>
-        <span class="badge badge-ghost">CivicRoute guidance</span>
+
+    <div class="card border border-base-300 bg-base-100 mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-lg">What do you need now?</h2>
+        <p class="text-sm text-base-content/70 mb-3">Choose the kind of help you need to see the most relevant verified option.</p>
+        <div class="flex flex-wrap gap-2">
+          <%= link_to "A clearer status or update", case_path(@case, need: "status_update"), class: "btn btn-outline btn-sm" %>
+          <%= link_to "Resolution of a service problem", case_path(@case, need: "service_problem"), class: "btn btn-outline btn-sm" %>
+          <%= link_to "Access to specific records", case_path(@case, need: "specific_information"), class: "btn btn-outline btn-sm" %>
+        </div>
       </div>
+    </div>
 
-      <h2 class="card-title text-2xl mb-4">
-        <% case @action_recommendation.action_type.to_s %>
-        <% when "monitor" %>
-          Continue monitoring
-        <% when "clarification" %>
-          Request written clarification
-        <% when "complaint" %>
-          Submit a formal complaint
-        <% when "rti" %>
-          Consider an RTI request
-        <% when "chraj" %>
-          View CHRAJ guidance
+    <div class="card border
+      <% if @action_recommendation.action_type.to_s == "monitor" %>
+        border-info/30
+      <% else %>
+        border-primary/30
+      <% end %>
+      bg-base-100 shadow-sm mb-6">
+      <div class="card-body">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge badge-primary gap-1">Recommended next step</span>
+          <span class="badge badge-ghost">CivicRoute guidance</span>
+        </div>
+
+        <% action_title = case @action_recommendation.action_type.to_s
+           when "monitor" then "Continue monitoring"
+           when "clarification" then "Request written clarification"
+           when "complaint" then "Submit a formal complaint"
+           when "rti" then "Consider an RTI request"
+           when "chraj" then "View CHRAJ guidance"
+           end %>
+        <h2 class="card-title text-xl mb-3"><%= action_title %></h2>
+
+        <div class="mb-4">
+          <p class="text-sm font-semibold text-base-content/60 mb-2">Why this is recommended</p>
+          <ul class="list-disc list-inside space-y-1 text-base-content/75 text-sm">
+            <% @action_recommendation.reasons.each do |reason| %>
+              <li><%= reason %></li>
+            <% end %>
+          </ul>
+        </div>
+
+        <% if @action_recommendation.action_resource %>
+          <div class="bg-base-200 rounded-lg p-4 mb-4">
+            <p class="text-sm font-semibold mb-1">Official destination</p>
+            <p class="text-base-content/80 text-sm"><%= @action_recommendation.action_resource.name %></p>
+            <p class="text-xs text-base-content/50 mt-1">
+              Verified from: <%= @action_recommendation.action_resource.source&.title %>
+              <% if @action_recommendation.action_resource.last_verified_at %>
+                &middot; Last verified: <%= l(@action_recommendation.action_resource.last_verified_at.to_date, format: :long) %>
+              <% end %>
+            </p>
+          </div>
         <% end %>
-      </h2>
 
-      <div class="mb-4">
-        <p class="text-sm font-semibold text-base-content/60 mb-2">Why this is recommended</p>
-        <ul class="list-disc list-inside space-y-1 text-base-content/75">
-          <% @action_recommendation.reasons.each do |reason| %>
-            <li><%= reason %></li>
+        <div class="flex flex-wrap gap-2">
+          <% if @action_recommendation.action_type.to_s != "monitor" %>
+            <%= link_to new_case_case_action_path(@case, action_type: @action_recommendation.action_type),
+                  class: "btn btn-primary btn-sm gap-1" do %>
+              Prepare <%= @action_recommendation.action_type.to_s == "clarification" ? "follow-up" : @action_recommendation.action_type.to_s %>
+            <% end %>
+          <% end %>
+
+          <span data-controller="ai" data-ai-url-value="<%= explain_action_case_assistant_path(@case) %>">
+            <button data-action="click->ai#explainAction" data-ai-target="button" class="btn btn-ghost btn-sm gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
+              Why this recommendation?
+            </button>
+            <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm ml-2"></span>
+            <div data-ai-target="error" class="hidden alert alert-warning mt-2 text-xs"></div>
+            <div data-ai-target="response" class="hidden card border border-info/30 bg-base-100 mt-2">
+              <div class="card-body p-4">
+                <p class="text-xs text-base-content/40 mb-2">AI-generated explanation based on verified CivicRoute sources</p>
+                <p data-ai-target="answer" class="text-sm text-base-content/80 whitespace-pre-wrap"></p>
+                <div data-ai-target="sources" class="mt-2 pt-2 border-t border-base-300">
+                  <p class="text-xs font-semibold text-base-content/50 mb-1">Verified sources used</p>
+                </div>
+              </div>
+            </div>
+          </span>
+        </div>
+
+        <% if @action_recommendation.secondary_actions.any? %>
+          <div class="divider my-2"></div>
+          <p class="text-sm font-semibold text-base-content/60 mb-2">Other verified options</p>
+          <div class="flex flex-wrap gap-2">
+            <% @action_recommendation.secondary_actions.each do |secondary| %>
+              <% secondary_label = case secondary.action_type.to_s
+                 when "rti" then "RTI guidance"
+                 when "chraj" then "CHRAJ guidance"
+                 else secondary.action_type.to_s.humanize
+                 end %>
+              <%= link_to secondary_label, new_case_case_action_path(@case, action_type: secondary.action_type),
+                    class: "btn btn-outline btn-sm gap-1" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100 mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-lg">Evidence timeline</h2>
+        <ul class="timeline timeline-vertical mt-4">
+          <% if @case.payment_date %>
+            <li>
+              <div class="timeline-start text-xs"><%= l(@case.payment_date, format: :short) %></div>
+              <div class="timeline-middle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+              </div>
+              <div class="timeline-end timeline-box text-sm">Payment recorded</div>
+            </li>
+          <% end %>
+
+          <% if @case.portal_created_on %>
+            <li>
+              <div class="timeline-start text-xs"><%= l(@case.portal_created_on, format: :short) %></div>
+              <div class="timeline-middle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+              </div>
+              <div class="timeline-end timeline-box text-sm">Portal Date Created</div>
+            </li>
+          <% end %>
+
+          <li>
+            <div class="timeline-start text-xs"><%= l(@case.application_completed_on, format: :short) %></div>
+            <div class="timeline-middle">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+            </div>
+            <div class="timeline-end timeline-box text-sm">Application completed</div>
+          </li>
+
+          <% if @rule_result.deadline %>
+            <li>
+              <div class="timeline-start text-xs"><%= l(@rule_result.deadline, format: :short) %></div>
+              <div class="timeline-middle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5
+                  <% if @rule_result.assessment_state == :timeframe_exceeded %> text-error
+                  <% else %> text-primary
+                  <% end %>
+                "><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+              </div>
+              <div class="timeline-end timeline-box text-sm">Published rule timeframe reached</div>
+            </li>
+          <% end %>
+
+          <% @observations.each do |obs| %>
+            <li>
+              <div class="timeline-start text-xs"><%= l(obs.observed_on, format: :short) %></div>
+              <div class="timeline-middle">
+                <% if obs.portal? %>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+                <% else %>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-warning"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+                <% end %>
+              </div>
+              <div class="timeline-end timeline-box text-sm">
+                <% if obs.portal? %>
+                  Portal snapshot recorded
+                  <% pending = obs.case_milestone_observations.select { |m| m.status == "Pending" } %>
+                  <% if pending.any? %>
+                    <br><span class="text-xs text-base-content/60"><%= pending.map { |m| m.process_step.name }.join(", ") %> — Pending</span>
+                  <% end %>
+                <% else %>
+                  <%= CivicRoute::EVIDENCE_SOURCES[obs.observation_type.to_sym] || obs.observation_type %>
+                  <% if obs.progress_claim.present? %>
+                    <br><span class="text-xs text-base-content/60"><%= CivicRoute::PROGRESS_CLAIMS[obs.progress_claim.to_sym] || obs.progress_claim %></span>
+                  <% end %>
+                <% end %>
+              </div>
+            </li>
+          <% end %>
+
+          <% @existing_actions.each do |action| %>
+            <% action_date = action.taken_on || action.recommended_on %>
+            <li>
+              <div class="timeline-start text-xs"><%= l(action_date, format: :short) %></div>
+              <div class="timeline-middle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+              </div>
+              <div class="timeline-end timeline-box text-sm">
+                <% action_label = case action.action_type.to_s
+                   when "monitor" then "Monitoring continued"
+                   when "clarification"
+                     action.taken? || action.responded? || action.resolved? || action.unresolved? ? "Follow-up marked sent" : "Follow-up prepared"
+                   when "complaint"
+                     action.taken? || action.responded? || action.resolved? || action.unresolved? ? "Complaint submitted" : "Complaint prepared"
+                   when "rti" then "RTI guidance viewed"
+                   when "chraj" then "CHRAJ guidance viewed"
+                   else action.action_type.humanize
+                   end %>
+                <%= action_label %>
+                <% if action.outcome %>
+                  <br><span class="text-xs text-base-content/60"><%= action.outcome.humanize %></span>
+                <% end %>
+              </div>
+            </li>
           <% end %>
         </ul>
       </div>
+    </div>
 
-      <% if @action_recommendation.action_resource %>
-        <div class="bg-base-200 rounded-lg p-4 mb-4">
-          <p class="text-sm font-semibold mb-1">Official destination</p>
-          <p class="text-base-content/80"><%= @action_recommendation.action_resource.name %></p>
-          <p class="text-xs text-base-content/50 mt-1">
-            Verified from: <%= @action_recommendation.action_resource.source&.title %>
-            <% if @action_recommendation.action_resource.last_verified_at %>
-              &middot; Last verified: <%= l(@action_recommendation.action_resource.last_verified_at.to_date, format: :long) %>
-            <% end %>
-          </p>
-        </div>
-      <% end %>
-
-      <div class="flex flex-wrap gap-2 mt-4">
-        <% if @action_recommendation.action_type.to_s != "monitor" %>
-          <%= link_to new_case_case_action_path(@case, action_type: @action_recommendation.action_type),
-                class: "btn btn-primary btn-sm gap-1" do %>
-            Prepare <%= @action_recommendation.action_type.to_s == "clarification" ? "follow-up" : @action_recommendation.action_type.to_s %>
-          <% end %>
-        <% end %>
-
-        <span data-controller="ai" data-ai-url-value="<%= explain_action_case_assistant_path(@case) %>">
-          <button data-action="click->ai#explainAction" data-ai-target="button" class="btn btn-ghost btn-sm gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
-            Why this recommendation?
-          </button>
-          <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm ml-2"></span>
-          <div data-ai-target="error" class="hidden alert alert-warning mt-3 text-sm"></div>
-          <div data-ai-target="response" class="hidden card border border-info/30 bg-base-100 mt-3">
-            <div class="card-body">
-              <p class="text-xs text-base-content/40 mb-2">AI-generated explanation based on verified CivicRoute sources</p>
-              <p data-ai-target="answer" class="text-sm text-base-content/80 whitespace-pre-wrap"></p>
-              <div data-ai-target="sources" class="mt-3 pt-3 border-t border-base-300">
-                <p class="text-xs font-semibold text-base-content/50 mb-1">Verified sources used</p>
-              </div>
-            </div>
-          </div>
-        </span>
-      </div>
-
-      <% if @action_recommendation.secondary_actions.any? %>
-        <div class="divider"></div>
-        <p class="text-sm font-semibold text-base-content/60 mb-3">Other verified options</p>
-        <div class="flex flex-wrap gap-2">
-          <% @action_recommendation.secondary_actions.each do |secondary| %>
-            <%= link_to new_case_case_action_path(@case, action_type: secondary.action_type),
-                  class: "btn btn-outline btn-sm gap-1" do %>
-              <% case secondary.action_type.to_s %>
-              <% when "rti" %>
-                RTI guidance
-              <% when "chraj" %>
-                CHRAJ guidance
-              <% else %>
-                <%= secondary.action_type.to_s.humanize %>
-              <% end %>
-            <% end %>
-          <% end %>
-        </div>
-      <% end %>
+    <div class="text-center mb-6 xl:hidden">
+      <%= link_to "Understand what this means", public_service_path(@case.public_service.slug), class: "btn btn-ghost btn-sm" %>
     </div>
   </div>
 
-  <% if @existing_actions.any? %>
-    <div class="card border border-base-300 bg-base-100 mb-8">
-      <div class="card-body">
-        <h2 class="card-title text-lg">Actions taken</h2>
-        <div class="space-y-3 mt-4">
-          <% @existing_actions.each do |action| %>
-            <div class="flex items-start gap-3 p-3 bg-base-200 rounded-lg">
-              <div class="flex-1">
-                <p class="font-semibold text-sm">
+  <aside class="space-y-6">
+
+    <div class="card border border-base-300 bg-base-100 xl:sticky xl:top-6">
+      <div class="card-body p-4">
+        <h2 class="card-title text-base mb-3">Case details</h2>
+        <dl class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <dt class="text-base-content/60">Region</dt>
+            <dd class="font-medium"><%= @case.region %></dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-base-content/60">Completed</dt>
+            <dd class="font-medium"><%= l(@case.application_completed_on, format: :short) %></dd>
+          </div>
+          <% if @case.payment_date %>
+            <div class="flex justify-between">
+              <dt class="text-base-content/60">Payment</dt>
+              <dd class="font-medium"><%= l(@case.payment_date, format: :short) %></dd>
+            </div>
+          <% end %>
+          <% if @case.portal_created_on %>
+            <div class="flex justify-between">
+              <dt class="text-base-content/60">Portal created</dt>
+              <dd class="font-medium"><%= l(@case.portal_created_on, format: :short) %></dd>
+            </div>
+          <% end %>
+          <div class="flex justify-between">
+            <dt class="text-base-content/60">Days elapsed</dt>
+            <dd class="font-medium"><%= @lifecycle.days_since_completed_application %> days</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100">
+      <div class="card-body p-4">
+        <h2 class="card-title text-base mb-3">Evidence summary</h2>
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div>
+            <div class="text-2xl font-bold text-primary"><%= @evidence_counts[:total] %></div>
+            <div class="text-xs text-base-content/60">Total</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-info"><%= @evidence_counts[:portal] %></div>
+            <div class="text-xs text-base-content/60">Portal</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-warning"><%= @evidence_counts[:non_portal] %></div>
+            <div class="text-xs text-base-content/60">Updates</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100">
+      <div class="card-body p-4">
+        <h2 class="card-title text-base mb-3">Portal milestones</h2>
+        <p class="text-xs text-base-content/50 mb-3">Observed <%= l(@latest_portal.observed_on, format: :short) %></p>
+        <% if @latest_portal.overall_status.present? %>
+          <div class="mb-3">
+            <span class="badge badge-neutral badge-sm"><%= @latest_portal.overall_status %></span>
+          </div>
+        <% end %>
+        <div class="space-y-2">
+          <% @milestones.each do |m| %>
+            <div class="flex items-center justify-between gap-2 text-sm">
+              <span class="text-base-content/80 truncate"><%= m.process_step.name %></span>
+              <span class="badge badge-sm
+                <% if m.status == "Completed" %> badge-success
+                <% elsif m.status == "Pending" %> badge-warning
+                <% else %> badge-ghost
+                <% end %>"><%= m.status %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100">
+      <div class="card-body p-4">
+        <h2 class="card-title text-base mb-3">Verified source</h2>
+        <dl class="space-y-2 text-sm">
+          <div>
+            <dt class="text-base-content/60">Source</dt>
+            <dd class="font-medium mt-0.5"><%= @rule_result.source.title %></dd>
+          </div>
+          <div>
+            <dt class="text-base-content/60">Provision</dt>
+            <dd class="font-medium mt-0.5"><%= @rule_result.source.section_label %></dd>
+          </div>
+          <div>
+            <dt class="text-base-content/60">Publisher</dt>
+            <dd class="font-medium mt-0.5"><%= @rule_result.source.publisher %></dd>
+          </div>
+          <div>
+            <dt class="text-base-content/60">Last verified</dt>
+            <dd class="font-medium mt-0.5"><%= l(@rule_result.source.verified_at.to_date, format: :long) %></dd>
+          </div>
+        </dl>
+        <div class="mt-3">
+          <%= link_to "Read source", @rule_result.source.url,
+            class: "btn btn-outline btn-xs w-full", target: "_blank", rel: "noopener noreferrer" %>
+        </div>
+      </div>
+    </div>
+
+    <% if @existing_actions.any? %>
+      <div class="card border border-base-300 bg-base-100">
+        <div class="card-body p-4">
+          <h2 class="card-title text-base mb-3">Actions taken</h2>
+          <div class="space-y-2">
+            <% @existing_actions.each do |action| %>
+              <div class="flex items-center justify-between gap-2 p-2 bg-base-200 rounded-lg text-sm">
+                <div class="min-w-0">
                   <% action_label = case action.action_type.to_s
                      when "clarification" then "Follow-up"
-                     when "complaint" then "Formal complaint"
-                     when "rti" then "RTI request"
-                     when "chraj" then "CHRAJ guidance"
-                     else action.action_type.to_s.humanize
+                     when "complaint" then "Complaint"
+                     when "rti" then "RTI"
+                     when "chraj" then "CHRAJ"
+                     else action.action_type.humanize
                      end %>
-                  <%= action_label %>
-                </p>
-                <p class="text-xs text-base-content/50">
-                  Recommended: <%= l(action.recommended_on, format: :long) %>
-                  <% if action.taken_on %>
-                    &middot; Taken: <%= l(action.taken_on, format: :long) %>
-                  <% end %>
-                </p>
-                <% badge_class = case action.status
-                   when "recommended" then "badge-ghost"
-                   when "prepared" then "badge-info"
-                   when "taken" then "badge-primary"
-                   when "responded" then "badge-success"
-                   when "resolved" then "badge-success"
-                   when "unresolved" then "badge-warning"
-                   when "cancelled" then "badge-ghost"
-                   else "badge-ghost"
-                   end %>
-                <span class="badge badge-sm mt-1 <%= badge_class %>"><%= action.status.humanize %></span>
-                <% if action.outcome %>
-                  <span class="badge badge-sm badge-outline ml-1"><%= action.outcome.humanize %></span>
-                <% end %>
+                  <p class="font-semibold text-xs"><%= action_label %></p>
+                  <% badge_class = case action.status
+                     when "taken" then "badge-primary"
+                     when "responded" then "badge-success"
+                     when "resolved" then "badge-success"
+                     when "unresolved" then "badge-warning"
+                     else "badge-ghost"
+                     end %>
+                  <span class="badge badge-xs mt-0.5 <%= badge_class %>"><%= action.status.humanize %></span>
+                </div>
+                <%= link_to "View", case_case_action_path(@case, action), class: "btn btn-ghost btn-xs shrink-0" %>
               </div>
-              <%= link_to "View", case_case_action_path(@case, action), class: "btn btn-ghost btn-xs" %>
-            </div>
-          <% end %>
-        </div>
-      </div>
-    </div>
-  <% end %>
-
-  <div class="card border border-base-300 bg-base-100 mb-8">
-    <div class="card-body">
-      <h2 class="card-title text-lg">What the public portal showed</h2>
-      <p class="text-sm text-base-content/50 mt-1">Observed <%= l(@latest_portal.observed_on, format: :long) %></p>
-      <p class="text-xs text-base-content/40 mt-2">Citizen-observed public portal information</p>
-
-      <% if @latest_portal.overall_status.present? %>
-        <div class="mt-4">
-          <span class="font-semibold text-sm">Overall status:</span>
-          <span class="badge badge-neutral ml-2"><%= @latest_portal.overall_status %></span>
-        </div>
-      <% end %>
-
-      <div class="overflow-x-auto mt-4">
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>Milestone</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @milestones.each do |m| %>
-              <tr>
-                <td><%= m.process_step.name %></td>
-                <td><span class="badge badge-neutral"><%= m.status %></span></td>
-              </tr>
             <% end %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="card border border-base-300 bg-base-100 mb-8">
-    <div class="card-body">
-      <h2 class="card-title text-lg">Verified source</h2>
-      <dl class="grid gap-4 text-sm sm:grid-cols-2 mt-4">
-        <div>
-          <dt class="font-semibold">Source</dt>
-          <dd class="mt-1 text-base-content/70"><%= @rule_result.source.title %></dd>
-        </div>
-        <div>
-          <dt class="font-semibold">Provision</dt>
-          <dd class="mt-1 text-base-content/70"><%= @rule_result.source.section_label %></dd>
-        </div>
-        <div>
-          <dt class="font-semibold">Publisher</dt>
-          <dd class="mt-1 text-base-content/70"><%= @rule_result.source.publisher %></dd>
-        </div>
-        <div>
-          <dt class="font-semibold">Last verified</dt>
-          <dd class="mt-1 text-base-content/70"><%= l(@rule_result.source.verified_at.to_date, format: :long) %></dd>
-        </div>
-      </dl>
-      <div class="mt-4">
-        <%= link_to "Read authoritative source", @rule_result.source.url,
-          class: "btn btn-outline btn-sm", target: "_blank", rel: "noopener noreferrer" %>
-      </div>
-    </div>
-  </div>
-
-  <div class="card border border-base-300 bg-base-100 mb-8">
-    <div class="card-body">
-      <h2 class="card-title text-lg">Evidence timeline</h2>
-      <ul class="timeline timeline-vertical mt-4">
-        <% if @case.payment_date %>
-          <li>
-            <div class="timeline-start"><%= l(@case.payment_date, format: :short) %></div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <div class="timeline-end timeline-box">Payment recorded</div>
-          </li>
-        <% end %>
-
-        <% if @case.portal_created_on %>
-          <li>
-            <div class="timeline-start"><%= l(@case.portal_created_on, format: :short) %></div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <div class="timeline-end timeline-box">Portal Date Created</div>
-          </li>
-        <% end %>
-
-        <li>
-          <div class="timeline-start"><%= l(@case.application_completed_on, format: :short) %></div>
-          <div class="timeline-middle">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
           </div>
-          <div class="timeline-end timeline-box">Application completed</div>
-        </li>
+        </div>
+      </div>
+    <% end %>
 
-        <% if @rule_result.deadline %>
-          <li>
-            <div class="timeline-start"><%= l(@rule_result.deadline, format: :short) %></div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5
-                <% if @rule_result.assessment_state == :timeframe_exceeded %>
-                  text-error
-                <% else %>
-                  text-primary
-                <% end %>
-              "><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <div class="timeline-end timeline-box">Published rule timeframe reached</div>
-          </li>
-        <% end %>
-
-        <% @observations.each do |obs| %>
-          <li>
-            <div class="timeline-start"><%= l(obs.observed_on, format: :short) %></div>
-            <div class="timeline-middle">
-              <% if obs.portal? %>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-              <% else %>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-warning"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-              <% end %>
-            </div>
-            <div class="timeline-end timeline-box">
-              <% if obs.portal? %>
-                Portal snapshot recorded
-                <% pending = obs.case_milestone_observations.select { |m| m.status == "Pending" } %>
-                <% if pending.any? %>
-                  <br><span class="text-xs text-base-content/60"><%= pending.map { |m| m.process_step.name }.join(", ") %> — Pending</span>
-                <% end %>
-              <% else %>
-                <%= CivicRoute::EVIDENCE_SOURCES[obs.observation_type.to_sym] || obs.observation_type %>
-                <% if obs.progress_claim.present? %>
-                  <br><span class="text-xs text-base-content/60"><%= CivicRoute::PROGRESS_CLAIMS[obs.progress_claim.to_sym] || obs.progress_claim %></span>
-                <% end %>
-              <% end %>
-            </div>
-          </li>
-        <% end %>
-
-        <% @existing_actions.each do |action| %>
-          <% action_date = action.taken_on || action.recommended_on %>
-          <li>
-            <div class="timeline-start"><%= l(action_date, format: :short) %></div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <div class="timeline-end timeline-box">
-              <% case action.action_type %>
-              <% when "monitor" %>
-                Monitoring continued
-              <% when "clarification" %>
-                <% if action.taken? || action.responded? || action.resolved? || action.unresolved? %>
-                  Follow-up marked sent
-                <% else %>
-                  Follow-up prepared
-                <% end %>
-              <% when "complaint" %>
-                <% if action.taken? || action.responded? || action.resolved? || action.unresolved? %>
-                  Complaint submitted
-                <% else %>
-                  Complaint prepared
-                <% end %>
-              <% when "rti" %> RTI guidance viewed
-              <% when "chraj" %> CHRAJ guidance viewed
-              <% end %>
-              <% if action.outcome %>
-                <br><span class="text-xs text-base-content/60"><%= action.outcome.humanize %></span>
-              <% end %>
-            </div>
-          </li>
-        <% end %>
-      </ul>
+    <div class="hidden xl:block">
+      <%= link_to "Understand what this means", public_service_path(@case.public_service.slug), class: "btn btn-ghost btn-sm w-full" %>
     </div>
-  </div>
-
-  <div class="text-center">
-    <%= link_to "Understand what this means", public_service_path(@case.public_service.slug), class: "btn btn-ghost" %>
-  </div>
+  </aside>
 </div>

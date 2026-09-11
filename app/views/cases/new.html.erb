@@ -3,7 +3,7 @@
 <div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
   <ul>
     <li><%= link_to t("nav.services"), root_path %></li>
-    <li><%= link_to @public_service.name, public_service_path(@public_service.slug) %></li>
+    <li><%= link_to @public_service.translated_name, public_service_path(@public_service.slug) %></li>
     <li aria-current="page"><%= t("case.check_application") %></li>
   </ul>
 </div>
@@ -15,7 +15,7 @@
 
 <div class="mx-auto max-w-2xl">
   <div class="mb-8">
-    <p class="mb-2 font-semibold text-primary"><%= @public_service.institution.country.name %> &middot; <%= @public_service.institution.name %></p>
+    <p class="mb-2 font-semibold text-primary"><%= @public_service.institution.country.name %> &middot; <%= @public_service.institution.translated_name %></p>
     <h1 class="text-3xl font-bold tracking-tight sm:text-4xl"><%= t("case.check_application") %></h1>
     <p class="mt-4 text-lg leading-8 text-base-content/75">
       <%= t("case.compare_description") %>
@@ -35,7 +35,7 @@
       <div class="card-body space-y-6">
         <h2 class="card-title text-xl">Service</h2>
         <div class="form-control">
-          <input type="text" value="<%= @public_service.name %>" class="input input-bordered" disabled />
+          <input type="text" value="<%= @public_service.translated_name %>" class="input input-bordered" disabled />
         </div>
       </div>
     </div>
@@ -114,12 +114,13 @@
         <% @tracking_steps.each do |step| %>
           <div class="form-control">
             <label class="label">
-              <span class="label-text font-semibold"><%= step.name %></span>
+              <span class="label-text font-semibold"><%= step.translated_name %></span>
             </label>
             <select name="milestones[<%= step.id %>]"
               class="select select-bordered w-full">
               <option value=""><%= t("case.select_status") %></option>
-              <% CivicRoute::PORTAL_STATUSES.each do |status| %>
+              <% @portal_statuses.each do |status_record| %>
+                <% status = status_record.name %>
                 <option value="<%= status %>"
                   <%= "selected" if params.dig(:milestones, step.id.to_s) == status %>>
                   <%= status %>

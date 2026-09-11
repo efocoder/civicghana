@@ -1,8 +1,10 @@
 class PublicService < ApplicationRecord
+  include CatalogTranslatable
   belongs_to :institution
   has_many :process_steps, -> { order(:sequence) }, dependent: :restrict_with_error
   has_many :service_rules, dependent: :restrict_with_error
   has_many :action_paths, -> { order(:sequence) }, dependent: :restrict_with_error
+  has_many :portal_statuses, dependent: :restrict_with_error
 
   normalizes :slug, with: ->(slug) { slug.strip.downcase }
 

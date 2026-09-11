@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_11_064626) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_101000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -107,6 +107,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_064626) do
     t.index ["public_service_id"], name: "index_cases_on_public_service_id"
   end
 
+  create_table "catalog_translations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.text "instructions"
+    t.string "locale", null: false
+    t.string "name"
+    t.string "section_label"
+    t.text "summary"
+    t.string "title"
+    t.uuid "translatable_id", null: false
+    t.string "translatable_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["translatable_type", "translatable_id", "locale"], name: "idx_catalog_translations_identity", unique: true
+    t.index ["translatable_type", "translatable_id"], name: "idx_on_translatable_type_translatable_id_c3efaa6963"
+  end
+
   create_table "countries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "code", null: false
@@ -115,6 +131,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_064626) do
     t.datetime "updated_at", null: false
     t.index ["code"], name: "index_countries_on_code", unique: true
     t.check_constraint "char_length(code::text) = 2", name: "countries_code_length"
+  end
+
+  create_table "evidence_sources", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_evidence_sources_on_code", unique: true
   end
 
   create_table "institutions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -127,6 +152,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_064626) do
     t.datetime "updated_at", null: false
     t.index ["country_id", "name"], name: "index_institutions_on_country_id_and_name", unique: true
     t.index ["country_id"], name: "index_institutions_on_country_id"
+  end
+
+  create_table "portal_statuses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.uuid "public_service_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["public_service_id", "code"], name: "index_portal_statuses_on_public_service_id_and_code", unique: true
+    t.index ["public_service_id"], name: "index_portal_statuses_on_public_service_id"
   end
 
   create_table "process_steps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -143,6 +180,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_064626) do
     t.check_constraint "sequence > 0", name: "process_steps_positive_sequence"
   end
 
+  create_table "progress_claims", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_progress_claims_on_code", unique: true
+  end
+
   create_table "public_services", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -155,6 +201,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_064626) do
     t.index ["institution_id", "name"], name: "index_public_services_on_institution_id_and_name", unique: true
     t.index ["institution_id"], name: "index_public_services_on_institution_id"
     t.index ["slug"], name: "index_public_services_on_slug", unique: true
+  end
+
+  create_table "regions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.uuid "country_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["country_id", "code"], name: "index_regions_on_country_id_and_code", unique: true
+    t.index ["country_id"], name: "index_regions_on_country_id"
   end
 
   create_table "service_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -226,9 +283,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_064626) do
   add_foreign_key "case_observations", "process_steps", column: "reported_process_step_id"
   add_foreign_key "cases", "public_services"
   add_foreign_key "institutions", "countries"
+  add_foreign_key "portal_statuses", "public_services"
   add_foreign_key "process_steps", "public_services"
   add_foreign_key "process_steps", "sources"
   add_foreign_key "public_services", "institutions"
+  add_foreign_key "regions", "countries"
   add_foreign_key "service_rules", "public_services"
   add_foreign_key "service_rules", "sources"
   add_foreign_key "source_chunks", "sources"
