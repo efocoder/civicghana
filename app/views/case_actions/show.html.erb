@@ -1,0 +1,194 @@
+<% content_for :title, "Action details | CivicRoute Ghana" %>
+
+<div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
+  <ul>
+    <li><%= link_to "Services", root_path %></li>
+    <li><%= link_to @case.public_service.name, public_service_path(@case.public_service.slug) %></li>
+    <li><%= link_to "Assessment", case_path(@case) %></li>
+    <li aria-current="page">Action details</li>
+  </ul>
+</div>
+
+<%= link_to case_path(@case), class: "btn btn-ghost btn-sm mb-4 gap-1" do %>
+  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+  Back to assessment
+<% end %>
+
+<div class="mx-auto max-w-3xl">
+  <div class="mb-8">
+    <p class="mb-2 font-semibold text-primary"><%= @case.public_service.institution.name %></p>
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+      <% action_title = case @action.action_type.to_s
+         when "clarification" then "Follow-up"
+         when "complaint" then "Formal complaint"
+         when "rti" then "RTI request"
+         when "chraj" then "CHRAJ guidance"
+         when "monitor" then "Monitoring"
+         else @action.action_type.humanize
+         end %>
+      <%= action_title %>
+    </h1>
+  </div>
+
+  <div class="card border border-base-300 bg-base-100 mb-6">
+    <div class="card-body">
+      <h2 class="card-title text-lg">Action status</h2>
+      <dl class="grid gap-4 text-sm sm:grid-cols-2 mt-4">
+        <div>
+          <dt class="font-semibold text-base-content/60">Type</dt>
+          <dd class="mt-1"><%= @action.action_type.humanize %></dd>
+        </div>
+        <div>
+          <dt class="font-semibold text-base-content/60">Status</dt>
+          <dd class="mt-1">
+            <% status_badge = case @action.status
+               when "recommended" then "badge-ghost"
+               when "prepared" then "badge-info"
+               when "taken" then "badge-primary"
+               when "responded" then "badge-success"
+               when "resolved" then "badge-success"
+               when "unresolved" then "badge-warning"
+               when "cancelled" then "badge-ghost"
+               else "badge-ghost"
+               end %>
+            <span class="badge <%= status_badge %>"><%= @action.status.humanize %></span>
+          </dd>
+        </div>
+        <div>
+          <dt class="font-semibold text-base-content/60">Recommended</dt>
+          <dd class="mt-1"><%= l(@action.recommended_on, format: :long) %></dd>
+        </div>
+        <% if @action.taken_on %>
+          <div>
+            <dt class="font-semibold text-base-content/60">Taken</dt>
+            <dd class="mt-1"><%= l(@action.taken_on, format: :long) %></dd>
+          </div>
+        <% end %>
+        <% if @action.outcome %>
+          <div>
+            <dt class="font-semibold text-base-content/60">Outcome</dt>
+            <dd class="mt-1"><span class="badge badge-outline"><%= @action.outcome.humanize %></span></dd>
+          </div>
+        <% end %>
+        <% if @action.notes.present? %>
+          <div class="sm:col-span-2">
+            <dt class="font-semibold text-base-content/60">Notes</dt>
+            <dd class="mt-1 text-base-content/75"><%= @action.notes %></dd>
+          </div>
+        <% end %>
+      </dl>
+    </div>
+  </div>
+
+  <% if @action_resource %>
+    <div class="card border border-base-300 bg-base-100 mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-lg">Official destination</h2>
+        <dl class="grid gap-4 text-sm mt-4">
+          <div>
+            <dt class="font-semibold text-base-content/60">Channel</dt>
+            <dd class="mt-1"><%= @action_resource.name %></dd>
+          </div>
+          <% if @action_resource.source %>
+            <div>
+              <dt class="font-semibold text-base-content/60">Verified from</dt>
+              <dd class="mt-1"><%= @action_resource.source.title %></dd>
+            </div>
+          <% end %>
+          <% if @action_resource.last_verified_at %>
+            <div>
+              <dt class="font-semibold text-base-content/60">Last verified</dt>
+              <dd class="mt-1"><%= l(@action_resource.last_verified_at.to_date, format: :long) %></dd>
+            </div>
+          <% end %>
+        </dl>
+        <% if @action_resource.url.present? %>
+          <div class="mt-4">
+            <%= link_to "Open official channel", @action_resource.url,
+              class: "btn btn-outline btn-sm", target: "_blank", rel: "noopener noreferrer" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @action.taken? && @action.outcome.nil? %>
+    <%= form_with model: [@case, @action], class: "card border border-primary/30 bg-base-100 mb-8" do |f| %>
+      <div class="card-body">
+        <h2 class="card-title text-lg">Record outcome</h2>
+        <p class="text-sm text-base-content/60 mb-4">
+          What happened after you took this action?
+        </p>
+
+        <div class="form-control mb-4">
+          <label class="label">
+            <span class="label-text font-semibold">Outcome</span>
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <label class="label cursor-pointer gap-2">
+              <%= f.radio_button :outcome, "awaiting_response", class: "radio radio-primary radio-sm" %>
+              <span class="label-text">Awaiting response</span>
+            </label>
+            <label class="label cursor-pointer gap-2">
+              <%= f.radio_button :outcome, "received_response", class: "radio radio-primary radio-sm" %>
+              <span class="label-text">Received response</span>
+            </label>
+            <label class="label cursor-pointer gap-2">
+              <%= f.radio_button :outcome, "resolved", class: "radio radio-primary radio-sm" %>
+              <span class="label-text">Resolved</span>
+            </label>
+            <label class="label cursor-pointer gap-2">
+              <%= f.radio_button :outcome, "unresolved", class: "radio radio-primary radio-sm" %>
+              <span class="label-text">Unresolved</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-control mb-4">
+          <label class="label" for="case_action_notes">
+            <span class="label-text">Notes (optional)</span>
+          </label>
+          <%= f.text_area :notes, class: "textarea textarea-bordered h-24", placeholder: "Any additional context..." %>
+        </div>
+
+        <%= f.hidden_field :status, value: "responded" %>
+
+        <div class="flex flex-wrap gap-2">
+          <%= f.submit "Save outcome", class: "btn btn-primary btn-sm" %>
+          <%= link_to "Cancel", case_path(@case), class: "btn btn-ghost btn-sm" %>
+        </div>
+      </div>
+    <% end %>
+  <% elsif @action.responded? || @action.unresolved? %>
+    <div class="card border border-base-300 bg-base-100 mb-8">
+      <div class="card-body">
+        <h2 class="card-title text-lg">Next steps</h2>
+        <% if @action.outcome == "received_response" %>
+          <p class="text-base-content/75 mb-4">
+            You recorded that you received a response. You can add this as an institutional update so CivicRoute can compare it with the portal.
+          </p>
+          <%= link_to new_case_observation_path(@case), class: "btn btn-primary btn-sm gap-1" do %>
+            Record institutional update
+          <% end %>
+        <% elsif @action.outcome == "resolved" %>
+          <p class="text-base-content/75">
+            You recorded that the issue was resolved. No further action is needed.
+          </p>
+        <% elsif @action.outcome == "unresolved" %>
+          <p class="text-base-content/75 mb-4">
+            You recorded that the issue remains unresolved. CivicRoute may recommend further escalation options.
+          </p>
+          <%= link_to case_path(@case), class: "btn btn-primary btn-sm" do %>
+            View updated recommendation
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @action.taken? && @action.outcome.nil? == false && @action.outcome != "received_response" %>
+    <div class="text-center">
+      <%= link_to "Back to assessment", case_path(@case), class: "btn btn-ghost" %>
+    </div>
+  <% end %>
+</div>

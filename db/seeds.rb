@@ -19,6 +19,13 @@ source_attributes = {
     authority_type: :official_service,
     summary: "Official public page for checking an application's visible status using its job number."
   },
+  lands_contact: {
+    publisher: "Ghana Lands Commission",
+    title: "Lands Commission Official Website",
+    url: "https://www.lc.gov.gh/",
+    authority_type: :official_service,
+    summary: "Official Lands Commission website for general institutional information and contact routes."
+  },
   complaints: {
     publisher: "Ghana Lands Commission",
     title: "Online Services - Feedback & Complaints",
@@ -122,4 +129,21 @@ duration_rule.update!({
     active: true
   }
   path.save!
+end
+
+[
+  [:contact, "Lands Commission — Contact & Enquiries", "Request status clarification or an update on your application.", "https://www.lc.gov.gh/", sources.fetch(:lands_contact)],
+  [:complaint, "Lands Commission — Feedback & Complaints", "Formally report an unresolved service issue or delay.", "https://onlineservices.lc.gov.gh/pt886_oXS", sources.fetch(:complaints)],
+  [:rti, "Right to Information Commission", "Request access to information or records held by a public institution.", "https://rtic.gov.gh/about/", sources.fetch(:rti)],
+  [:administrative_redress, "CHRAJ — Administrative Justice", "Seek administrative-justice guidance after unsuccessful attempts to resolve with the institution.", "https://chraj.gov.gh/administrative-justice-mandate/", sources.fetch(:chraj)]
+].each do |resource_type, name, purpose, url, source|
+  resource = ActionResource.find_or_initialize_by(institution: lands_commission, resource_type: resource_type)
+  resource.update!({
+    name: name,
+    purpose: purpose,
+    url: url,
+    source: source,
+    last_verified_at: verified_at,
+    active: true
+  })
 end

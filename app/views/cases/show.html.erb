@@ -288,6 +288,146 @@
 
   <div class="card border border-base-300 bg-base-100 mb-8">
     <div class="card-body">
+      <h2 class="card-title text-lg">What do you need now?</h2>
+      <p class="text-sm text-base-content/70">Choose the kind of help you need to see the most relevant verified option.</p>
+      <div class="flex flex-wrap gap-2 mt-3">
+        <%= link_to "A clearer status or update", case_path(@case, need: "status_update"), class: "btn btn-outline btn-sm" %>
+        <%= link_to "Resolution of a service problem", case_path(@case, need: "service_problem"), class: "btn btn-outline btn-sm" %>
+        <%= link_to "Access to specific records", case_path(@case, need: "specific_information"), class: "btn btn-outline btn-sm" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border
+    <% if @action_recommendation.action_type.to_s == "monitor" %>
+      border-info/30
+    <% else %>
+      border-primary/30
+    <% end %>
+    bg-base-100 shadow-sm mb-8">
+    <div class="card-body">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="badge badge-primary gap-1">Recommended next step</span>
+        <span class="badge badge-ghost">CivicRoute guidance</span>
+      </div>
+
+      <h2 class="card-title text-2xl mb-4">
+        <% case @action_recommendation.action_type.to_s %>
+        <% when "monitor" %>
+          Continue monitoring
+        <% when "clarification" %>
+          Request written clarification
+        <% when "complaint" %>
+          Submit a formal complaint
+        <% when "rti" %>
+          Consider an RTI request
+        <% when "chraj" %>
+          View CHRAJ guidance
+        <% end %>
+      </h2>
+
+      <div class="mb-4">
+        <p class="text-sm font-semibold text-base-content/60 mb-2">Why this is recommended</p>
+        <ul class="list-disc list-inside space-y-1 text-base-content/75">
+          <% @action_recommendation.reasons.each do |reason| %>
+            <li><%= reason %></li>
+          <% end %>
+        </ul>
+      </div>
+
+      <% if @action_recommendation.action_resource %>
+        <div class="bg-base-200 rounded-lg p-4 mb-4">
+          <p class="text-sm font-semibold mb-1">Official destination</p>
+          <p class="text-base-content/80"><%= @action_recommendation.action_resource.name %></p>
+          <p class="text-xs text-base-content/50 mt-1">
+            Verified from: <%= @action_recommendation.action_resource.source&.title %>
+            <% if @action_recommendation.action_resource.last_verified_at %>
+              &middot; Last verified: <%= l(@action_recommendation.action_resource.last_verified_at.to_date, format: :long) %>
+            <% end %>
+          </p>
+        </div>
+      <% end %>
+
+      <div class="flex flex-wrap gap-2 mt-4">
+        <% if @action_recommendation.action_type.to_s != "monitor" %>
+          <%= link_to new_case_case_action_path(@case, action_type: @action_recommendation.action_type),
+                class: "btn btn-primary btn-sm gap-1" do %>
+            Prepare <%= @action_recommendation.action_type.to_s == "clarification" ? "follow-up" : @action_recommendation.action_type.to_s %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <% if @action_recommendation.secondary_actions.any? %>
+        <div class="divider"></div>
+        <p class="text-sm font-semibold text-base-content/60 mb-3">Other verified options</p>
+        <div class="flex flex-wrap gap-2">
+          <% @action_recommendation.secondary_actions.each do |secondary| %>
+            <%= link_to new_case_case_action_path(@case, action_type: secondary.action_type),
+                  class: "btn btn-outline btn-sm gap-1" do %>
+              <% case secondary.action_type.to_s %>
+              <% when "rti" %>
+                RTI guidance
+              <% when "chraj" %>
+                CHRAJ guidance
+              <% else %>
+                <%= secondary.action_type.to_s.humanize %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @existing_actions.any? %>
+    <div class="card border border-base-300 bg-base-100 mb-8">
+      <div class="card-body">
+        <h2 class="card-title text-lg">Actions taken</h2>
+        <div class="space-y-3 mt-4">
+          <% @existing_actions.each do |action| %>
+            <div class="flex items-start gap-3 p-3 bg-base-200 rounded-lg">
+              <div class="flex-1">
+                <p class="font-semibold text-sm">
+                  <% action_label = case action.action_type.to_s
+                     when "clarification" then "Follow-up"
+                     when "complaint" then "Formal complaint"
+                     when "rti" then "RTI request"
+                     when "chraj" then "CHRAJ guidance"
+                     else action.action_type.to_s.humanize
+                     end %>
+                  <%= action_label %>
+                </p>
+                <p class="text-xs text-base-content/50">
+                  Recommended: <%= l(action.recommended_on, format: :long) %>
+                  <% if action.taken_on %>
+                    &middot; Taken: <%= l(action.taken_on, format: :long) %>
+                  <% end %>
+                </p>
+                <% badge_class = case action.status
+                   when "recommended" then "badge-ghost"
+                   when "prepared" then "badge-info"
+                   when "taken" then "badge-primary"
+                   when "responded" then "badge-success"
+                   when "resolved" then "badge-success"
+                   when "unresolved" then "badge-warning"
+                   when "cancelled" then "badge-ghost"
+                   else "badge-ghost"
+                   end %>
+                <span class="badge badge-sm mt-1 <%= badge_class %>"><%= action.status.humanize %></span>
+                <% if action.outcome %>
+                  <span class="badge badge-sm badge-outline ml-1"><%= action.outcome.humanize %></span>
+                <% end %>
+              </div>
+              <%= link_to "View", case_case_action_path(@case, action), class: "btn btn-ghost btn-xs" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="card border border-base-300 bg-base-100 mb-8">
+    <div class="card-body">
       <h2 class="card-title text-lg">What the public portal showed</h2>
       <p class="text-sm text-base-content/50 mt-1">Observed <%= l(@latest_portal.observed_on, format: :long) %></p>
       <p class="text-xs text-base-content/40 mt-2">Citizen-observed public portal information</p>
@@ -418,6 +558,39 @@
                 <% if obs.progress_claim.present? %>
                   <br><span class="text-xs text-base-content/60"><%= CivicRoute::PROGRESS_CLAIMS[obs.progress_claim.to_sym] || obs.progress_claim %></span>
                 <% end %>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+
+        <% @existing_actions.each do |action| %>
+          <% action_date = action.taken_on || action.recommended_on %>
+          <li>
+            <div class="timeline-start"><%= l(action_date, format: :short) %></div>
+            <div class="timeline-middle">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+            </div>
+            <div class="timeline-end timeline-box">
+              <% case action.action_type %>
+              <% when "monitor" %>
+                Monitoring continued
+              <% when "clarification" %>
+                <% if action.taken? || action.responded? || action.resolved? || action.unresolved? %>
+                  Follow-up marked sent
+                <% else %>
+                  Follow-up prepared
+                <% end %>
+              <% when "complaint" %>
+                <% if action.taken? || action.responded? || action.resolved? || action.unresolved? %>
+                  Complaint submitted
+                <% else %>
+                  Complaint prepared
+                <% end %>
+              <% when "rti" %> RTI guidance viewed
+              <% when "chraj" %> CHRAJ guidance viewed
+              <% end %>
+              <% if action.outcome %>
+                <br><span class="text-xs text-base-content/60"><%= action.outcome.humanize %></span>
               <% end %>
             </div>
           </li>

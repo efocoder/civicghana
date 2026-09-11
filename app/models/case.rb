@@ -1,6 +1,7 @@
 class Case < ApplicationRecord
   belongs_to :public_service
   has_many :case_observations, dependent: :destroy
+  has_many :case_actions, dependent: :destroy
 
   validates :region, presence: true
   validates :region, inclusion: { in: CivicRoute::REGIONS }

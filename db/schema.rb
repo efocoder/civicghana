@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_10_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_10_200100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -31,6 +31,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_190000) do
     t.index ["public_service_id"], name: "index_action_paths_on_public_service_id"
     t.index ["source_id"], name: "index_action_paths_on_source_id"
     t.check_constraint "sequence > 0", name: "action_paths_positive_sequence"
+  end
+
+  create_table "action_resources", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.uuid "institution_id", null: false
+    t.datetime "last_verified_at"
+    t.string "name", null: false
+    t.string "phone"
+    t.text "purpose", null: false
+    t.string "resource_type", null: false
+    t.uuid "source_id"
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.index ["active"], name: "index_action_resources_on_active"
+    t.index ["institution_id"], name: "index_action_resources_on_institution_id"
+    t.index ["resource_type"], name: "index_action_resources_on_resource_type"
+    t.index ["source_id"], name: "index_action_resources_on_source_id"
+  end
+
+  create_table "case_actions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "action_resource_id"
+    t.string "action_type", null: false
+    t.uuid "case_id", null: false
+    t.datetime "created_at", null: false
+    t.text "notes"
+    t.string "outcome"
+    t.date "recommended_on", null: false
+    t.string "status", default: "recommended", null: false
+    t.date "taken_on"
+    t.datetime "updated_at", null: false
+    t.index ["action_resource_id"], name: "index_case_actions_on_action_resource_id"
+    t.index ["action_type"], name: "index_case_actions_on_action_type"
+    t.index ["case_id", "action_type"], name: "index_case_actions_on_case_id_and_action_type"
+    t.index ["case_id"], name: "index_case_actions_on_case_id"
+    t.index ["status"], name: "index_case_actions_on_status"
   end
 
   create_table "case_milestone_observations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -162,6 +199,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_190000) do
 
   add_foreign_key "action_paths", "public_services"
   add_foreign_key "action_paths", "sources"
+  add_foreign_key "action_resources", "institutions"
+  add_foreign_key "action_resources", "sources"
+  add_foreign_key "case_actions", "action_resources"
+  add_foreign_key "case_actions", "cases"
   add_foreign_key "case_milestone_observations", "case_observations"
   add_foreign_key "case_milestone_observations", "process_steps"
   add_foreign_key "case_observations", "cases"

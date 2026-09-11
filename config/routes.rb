@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   resources :public_services, only: %i[index show], param: :slug
   resources :cases, only: %i[new create show] do
     resources :observations, only: %i[new create], controller: "case_observations"
+    resources :case_actions, only: %i[new create show update]
   end
   root "public_services#index"
 end

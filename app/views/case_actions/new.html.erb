@@ -1,0 +1,197 @@
+<% content_for :title, "Prepare #{@action_type.to_s.humanize} | CivicRoute Ghana" %>
+
+<div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
+  <ul>
+    <li><%= link_to "Services", root_path %></li>
+    <li><%= link_to @case.public_service.name, public_service_path(@case.public_service.slug) %></li>
+    <li><%= link_to "Assessment", case_path(@case) %></li>
+    <li aria-current="page">Prepare <%= @action_type.to_s.humanize.downcase %></li>
+  </ul>
+</div>
+
+<%= link_to case_path(@case), class: "btn btn-ghost btn-sm mb-4 gap-1" do %>
+  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+  Back to assessment
+<% end %>
+
+<div class="mx-auto max-w-3xl">
+  <div class="mb-8">
+    <p class="mb-2 font-semibold text-primary"><%= @case.public_service.institution.name %></p>
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+      <% action_title = case @action_type.to_s
+         when "clarification" then "Prepare follow-up"
+         when "complaint" then "Prepare formal complaint"
+         when "rti" then "RTI guidance"
+         when "chraj" then "CHRAJ guidance"
+         else @action_type.to_s.humanize
+         end %>
+      <%= action_title %>
+    </h1>
+  </div>
+
+  <% if @action_recommendation.reasons.any? %>
+    <div class="card border border-primary/30 bg-base-100 mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-lg">Why this is recommended</h2>
+        <ul class="list-disc list-inside space-y-1 text-base-content/75 mt-2">
+          <% @action_recommendation.reasons.each do |reason| %>
+            <li><%= reason %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @action_resource %>
+    <div class="card border border-base-300 bg-base-100 mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-lg">Official destination</h2>
+        <dl class="grid gap-4 text-sm mt-4">
+          <div>
+            <dt class="font-semibold text-base-content/60">Channel</dt>
+            <dd class="mt-1"><%= @action_resource.name %></dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-base-content/60">Purpose</dt>
+            <dd class="mt-1 text-base-content/75"><%= @action_resource.purpose %></dd>
+          </div>
+          <% if @action_resource.source %>
+            <div>
+              <dt class="font-semibold text-base-content/60">Verified from</dt>
+              <dd class="mt-1"><%= @action_resource.source.title %></dd>
+            </div>
+          <% end %>
+          <% if @action_resource.last_verified_at %>
+            <div>
+              <dt class="font-semibold text-base-content/60">Last verified</dt>
+              <dd class="mt-1"><%= l(@action_resource.last_verified_at.to_date, format: :long) %></dd>
+            </div>
+          <% end %>
+        </dl>
+        <% if @action_resource.url.present? %>
+          <div class="mt-4">
+            <%= link_to "Open official channel", @action_resource.url,
+              class: "btn btn-outline btn-sm", target: "_blank", rel: "noopener noreferrer" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @action_type == :chraj %>
+    <div class="card border border-warning/30 bg-base-100 mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-lg">Before proceeding</h2>
+        <p class="text-base-content/75 mb-4">
+          CHRAJ handles administrative-justice complaints. It is generally appropriate to first attempt resolution through the institution's own channels.
+        </p>
+        <p class="text-base-content/75">
+          If your efforts to resolve the issue with the institution have been unsuccessful, CHRAJ may be an appropriate avenue.
+        </p>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @action_type == :rti %>
+    <div class="card border border-info/30 bg-base-100 mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-lg">When RTI is relevant</h2>
+        <p class="text-base-content/75 mb-4">
+          A Right to Information request is appropriate when you need access to specific recorded information held by a public institution.
+        </p>
+        <p class="text-base-content/75 mb-4">Examples:</p>
+        <ul class="list-disc list-inside space-y-1 text-base-content/75">
+          <li>What is the current recorded status of my application?</li>
+          <li>What administrative step remains outstanding?</li>
+          <li>What record explains the delay?</li>
+        </ul>
+        <p class="text-sm text-base-content/60 mt-4">
+          CivicRoute cannot determine whether information is exempt or predict whether an RTI request will succeed.
+        </p>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @draft %>
+    <div class="card border border-base-300 bg-base-100 mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-lg">Draft</h2>
+        <p class="text-sm text-base-content/60 mb-4">
+          Review and edit this draft before using it. CivicRoute does not send it automatically.
+        </p>
+
+        <div class="form-control mb-4">
+          <label class="label">
+            <span class="label-text font-semibold">Subject</span>
+          </label>
+          <input type="text" id="draft-subject" value="<%= @draft[:subject] %>" class="input input-bordered w-full">
+        </div>
+
+        <div class="form-control mb-4">
+          <label class="label">
+            <span class="label-text font-semibold">Body</span>
+          </label>
+          <textarea id="draft-body" class="textarea textarea-bordered h-64 font-mono text-sm"><%= @draft[:body] %></textarea>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button type="button" id="copy-draft-btn" class="btn btn-outline btn-sm gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg>
+            Copy full draft
+          </button>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%= form_with model: [@case, @action], class: "card border border-base-300 bg-base-100 mb-8" do |f| %>
+    <div class="card-body">
+      <h2 class="card-title text-lg">Mark as taken</h2>
+      <p class="text-sm text-base-content/60 mb-4">
+        After you have prepared and used this draft, record when you took the action.
+      </p>
+
+      <%= f.hidden_field :action_type, value: @action_type %>
+      <%= f.hidden_field :status, value: "taken" %>
+      <%= f.hidden_field :recommended_on %>
+      <% if @action_resource %>
+        <%= f.hidden_field :action_resource_id, value: @action_resource.id %>
+      <% end %>
+
+      <div class="form-control mb-4">
+        <label class="label" for="case_action_taken_on">
+          <span class="label-text font-semibold">When did you take this action?</span>
+        </label>
+        <%= f.date_field :taken_on, value: Date.current, max: Date.current, class: "input input-bordered w-full sm:w-64" %>
+      </div>
+
+      <div class="form-control mb-4">
+        <label class="label" for="case_action_notes">
+          <span class="label-text">Notes (optional)</span>
+        </label>
+        <%= f.text_area :notes, class: "textarea textarea-bordered h-24", placeholder: "Any additional context..." %>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <%= f.submit "Mark as taken", class: "btn btn-primary btn-sm" %>
+        <%= link_to "Cancel", case_path(@case), class: "btn btn-ghost btn-sm" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener("turbo:load", function() {
+    var btn = document.getElementById("copy-draft-btn");
+    if (!btn) return;
+    btn.addEventListener("click", function() {
+      var subject = document.getElementById("draft-subject");
+      var body = document.getElementById("draft-body");
+      var text = "Subject: " + subject.value + "\n\n" + body.value;
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = "Copied!";
+        setTimeout(function() { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg> Copy full draft'; }, 1500);
+      });
+    });
+  });
+</script>

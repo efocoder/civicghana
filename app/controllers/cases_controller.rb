@@ -60,6 +60,14 @@ class CasesController < ApplicationController
       portal: @observations.count(&:portal?),
       non_portal: @observations.count { |o| !o.portal? }
     }
+
+    @action_recommendation = ActionRecommendation::Evaluate.call(
+      case_record: @case,
+      rule_result: @rule_result,
+      evidence_comparison: @evidence_comparison,
+      information_need: params[:need]
+    )
+    @existing_actions = @case.case_actions.includes(:action_resource).order(:created_at)
   end
 
   private
