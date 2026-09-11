@@ -1,0 +1,22 @@
+{
+  "name": "CivicRoute Ghana",
+  "short_name": "CivicRoute",
+  "start_url": "/",
+  "display": "standalone",
+  "scope": "/",
+  "description": "Understand public-service processes using verified, sourced official rules.",
+  "theme_color": "#1e3a5f",
+  "background_color": "#f4f5f7",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

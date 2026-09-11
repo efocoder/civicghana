@@ -49,7 +49,7 @@ class CaseObservationsController < ApplicationController
   def submitted_milestones
     allowed_ids = @tracking_steps.map { |step| step.id.to_s }
 
-    params.fetch(:milestones, {}).permit!.to_h.filter_map do |step_id, status|
+    params.fetch(:milestones, {}).to_unsafe_h.filter_map do |step_id, status|
       next if status.blank? || !allowed_ids.include?(step_id.to_s)
       next unless CivicRoute::PORTAL_STATUSES.include?(status)
 

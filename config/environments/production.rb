@@ -11,6 +11,8 @@ Rails.application.configure do
 
   # Full error reports are disabled.
   config.consider_all_requests_local = false
+  config.force_ssl = true
+  config.session_store :cookie_store, key: "_civicroute_session", secure: true, httponly: true, same_site: :lax
 
   # Turn on fragment caching in view templates.
   config.action_controller.perform_caching = true
@@ -80,11 +82,17 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
+  configured_hosts = ENV.fetch("APP_HOSTS", "").split(",").map(&:strip).reject(&:blank?)
+  config.hosts.concat(configured_hosts) if configured_hosts.any?
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  config.action_dispatch.default_headers = {
+    "X-Frame-Options" => "DENY",
+    "X-Content-Type-Options" => "nosniff",
+    "X-XSS-Protection" => "1; mode=block",
+    "Referrer-Policy" => "strict-origin-when-cross-origin",
+    "Permissions-Policy" => "camera=(), microphone=(), geolocation=()"
+  }
 end

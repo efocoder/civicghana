@@ -1,15 +1,15 @@
-<% content_for :title, "Choose a public service | CivicRoute Ghana" %>
+<% content_for :title, "#{t('homepage.tagline')} | #{t('civicroute.app_name')}" %>
 
 <section class="mx-auto max-w-3xl">
   <div class="mb-10">
-    <div class="badge badge-primary badge-outline mb-4">Trust · Understand · Act</div>
-    <h1 class="text-3xl font-bold tracking-tight sm:text-5xl">Understand a public-service process with evidence.</h1>
+    <div class="badge badge-primary badge-outline mb-4"><%= t("homepage.tagline") %></div>
+    <h1 class="text-3xl font-bold tracking-tight sm:text-5xl"><%= t("homepage.headline") %></h1>
     <p class="mt-4 max-w-2xl text-lg leading-8 text-base-content/75">
-      See the official rule, understand what it means, and find a verified next step without guessing what is happening inside an institution.
+      <%= t("homepage.subtitle") %>
     </p>
   </div>
 
-  <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-base-content/60">Available services</h2>
+  <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-base-content/60"><%= t("homepage.available_services") %></h2>
 
   <div class="grid gap-4">
     <% @public_services.each do |service| %>
@@ -24,7 +24,7 @@
             <p class="mt-2 leading-7 text-base-content/75"><%= service.description %></p>
           </div>
           <div class="card-actions justify-end">
-            <%= link_to "View verified service guide", public_service_path(service.slug), class: "btn btn-primary" %>
+            <%= link_to t("homepage.view_guide"), public_service_path(service.slug), class: "btn btn-primary" %>
           </div>
         </div>
       </article>

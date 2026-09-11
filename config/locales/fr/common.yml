@@ -1,0 +1,36 @@
+fr:
+  civicroute:
+    app_name: "CivicRoute Ghana"
+    independent_tool: "Outil civique indépendant"
+    not_affiliated: "CivicRoute n'est affilié à aucune institution gouvernementale."
+  nav:
+    services: "Services"
+    back_to_services: "Tous les services"
+    assessment: "Évaluation"
+  homepage:
+    tagline: "Faire confiance · Comprendre · Agir"
+    headline: "Vous attendez trop longtemps un service public ?"
+    subtitle: "Comparez les informations du portail public avec les règles vérifiées et les mises à jour reçues, puis découvrez quoi faire."
+    available_services: "Services disponibles"
+    view_guide: "Voir le guide vérifié"
+  service:
+    verified_source: "Source vérifiée"
+    official_fact: "Fait officiel"
+    source: "Source"
+    provision: "Disposition"
+    publisher: "Éditeur"
+    effective_from: "En vigueur depuis"
+    last_verified: "Dernière vérification"
+    read_source: "Lire la source officielle"
+    published_journey: "Parcours public publié"
+    ready_to_check: "Prêt à vérifier votre dossier ?"
+    start_checking: "Commencer la vérification"
+    explain_rule: "Expliquer simplement cette règle"
+  ai:
+    explain_assessment: "Expliquer mon évaluation"
+    why_recommendation: "Pourquoi cette recommandation ?"
+    ask_about_service: "Poser une question sur ce service"
+    ask_button: "Demander à CivicRoute"
+    sources_used: "Sources vérifiées utilisées"
+  offline:
+    message: "Vous êtes hors ligne. Les informations publiques déjà mises en cache restent disponibles."

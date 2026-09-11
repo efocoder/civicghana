@@ -257,3 +257,56 @@ end
     chunk.provision = provision
   end
 end
+
+tracking_steps = official_search.process_steps.where("sequence >= 4").order(:sequence)
+
+demo_case = Case.find_or_create_by!(
+  public_service: official_search,
+  application_completed_on: Date.new(2026, 7, 30)
+) do |c|
+  c.region = "Greater Accra"
+  c.payment_date = Date.new(2026, 7, 27)
+  c.portal_created_on = Date.new(2026, 7, 27)
+end
+
+unless demo_case.case_observations.any?
+  obs1 = demo_case.case_observations.create!(
+    observation_type: :portal,
+    observed_on: Date.new(2026, 8, 20),
+    overall_status: "In Progress"
+  )
+  tracking_steps.each_with_index do |step, i|
+    obs1.case_milestone_observations.create!(
+      process_step: step,
+      status: i == 0 ? "Pending" : "Not Completed"
+    )
+  end
+
+  demo_case.case_observations.create!(
+    observation_type: :phone,
+    observed_on: Date.new(2026, 9, 5),
+    progress_claim: :near_completion,
+    summary: "Institutional phone update indicates near completion"
+  )
+
+  obs2 = demo_case.case_observations.create!(
+    observation_type: :portal,
+    observed_on: Date.new(2026, 9, 10),
+    overall_status: "In Progress"
+  )
+  tracking_steps.each_with_index do |step, i|
+    obs2.case_milestone_observations.create!(
+      process_step: step,
+      status: i == 0 ? "Pending" : "Not Completed"
+    )
+  end
+end
+
+ActionResource.find_or_create_by!(institution: lands_commission, resource_type: :contact) do |r|
+  r.name = "Lands Commission — Contact & Enquiries"
+  r.purpose = "Request status clarification or an update on your application."
+  r.url = "https://www.lc.gov.gh/"
+  r.source = sources.fetch(:lands_contact)
+  r.last_verified_at = verified_at
+  r.active = true
+end

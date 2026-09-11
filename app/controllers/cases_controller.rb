@@ -81,7 +81,7 @@ class CasesController < ApplicationController
   end
 
   def submitted_milestones
-    milestone_params = params.fetch(:milestones, {}).permit!.to_h
+    milestone_params = params.fetch(:milestones, {}).to_unsafe_h
     allowed_ids = @tracking_steps.map { |step| step.id.to_s }
 
     milestone_params.filter_map do |step_id, status|
