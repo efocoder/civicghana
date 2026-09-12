@@ -24,6 +24,12 @@
   </div>
 </div>
 
+<div class="mb-6" data-controller="saved-item" data-saved-item-type-value="case" data-saved-item-public-id-value="<%= @case.public_id %>" data-saved-item-item-value="<%= { type: 'case', public_id: @case.public_id, title: @case.public_service.translated_name, agency_name: @case.public_service.institution.translated_name, url: case_path(@case) }.to_json %>" data-saved-item-save-label-value="<%= t('saved.save_case') %>" data-saved-item-saved-label-value="<%= t('saved.saved_state') %>" data-saved-item-remove-label-value="<%= t('saved.remove') %>" data-saved-item-unavailable-label-value="<%= t('saved.unavailable') %>" data-copied-label="<%= t('saved.copied') %>" data-copy-fallback="<%= t('saved.copy_fallback') %>">
+  <button type="button" class="btn btn-outline btn-sm" data-saved-item-target="button" data-action="saved-item#toggle"><%= t("saved.save_case") %></button>
+  <button type="button" class="btn btn-ghost btn-sm" data-action="saved-item#copyLink"><%= t("saved.copy_link") %></button>
+  <span class="ml-2 text-sm text-success" data-saved-item-target="state"></span><span class="ml-2 text-sm text-error" data-saved-item-target="message"></span>
+</div>
+
 <div class="grid gap-6 xl:grid-cols-[1fr_22rem]">
 
   <div class="min-w-0">

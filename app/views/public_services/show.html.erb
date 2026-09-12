@@ -12,6 +12,10 @@
   <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
   All services
 <% end %>
+<div class="mb-6" data-controller="saved-item" data-saved-item-type-value="service" data-saved-item-public-id-value="<%= @public_service.slug %>" data-saved-item-item-value="<%= { type: 'service', public_id: @public_service.slug, title: @public_service.translated_name, agency_name: @public_service.institution.translated_name, url: public_service_path(@public_service.slug) }.to_json %>" data-saved-item-save-label-value="<%= t('saved.save_service') %>" data-saved-item-saved-label-value="<%= t('saved.saved_state') %>" data-saved-item-remove-label-value="<%= t('saved.remove') %>" data-saved-item-unavailable-label-value="<%= t('saved.unavailable') %>">
+  <button type="button" class="btn btn-outline btn-sm" data-saved-item-target="button" data-action="saved-item#toggle"><%= t("saved.save_service") %></button>
+  <span class="ml-2 text-sm text-success" data-saved-item-target="state"></span><span class="ml-2 text-sm text-error" data-saved-item-target="message"></span>
+</div>
 
 <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
   <section>

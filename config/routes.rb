@@ -27,6 +27,8 @@ Rails.application.routes.draw do
     post :explain_rule
   end
 
+  get "saved", to: "saved#index", as: :saved
+
   namespace :admin do
     root "agencies#index"
     resources :agencies

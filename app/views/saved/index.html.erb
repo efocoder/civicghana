@@ -1,0 +1,13 @@
+<% content_for :title, "#{t('saved.title')} | #{t('civicroute.app_name')}" %>
+<section class="mx-auto max-w-4xl space-y-8" data-controller="saved-list" data-saved-list-continue-label-value="<%= t('saved.continue') %>" data-saved-list-view-label-value="<%= t('saved.view') %>" data-saved-list-remove-label-value="<%= t('saved.remove') %>" data-saved-list-confirm-label-value="<%= t('saved.confirm') %>">
+  <div>
+    <h1 class="text-3xl font-bold"><%= t("saved.title") %></h1>
+    <p class="mt-2 text-base-content/70"><%= t("saved.intro") %></p>
+  </div>
+  <div class="alert alert-info text-sm"><%= t("saved.privacy") %></div>
+  <div data-saved-list-target="content" class="space-y-8"></div>
+  <div data-saved-list-target="empty" class="card border border-base-300 bg-base-100">
+    <div class="card-body items-center text-center"><h2 class="card-title"><%= t("saved.nothing") %></h2><p><%= t("saved.empty") %></p><%= link_to t("saved.explore"), root_path, class: "btn btn-primary mt-2" %></div>
+  </div>
+  <button type="button" class="btn btn-outline btn-error" data-action="saved-list#clear"><%= t("saved.clear") %></button>
+</section>
