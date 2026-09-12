@@ -1,5 +1,10 @@
 require "digest"
 
+def ensure_catalog_translation(record, locale: "en", attributes: {})
+  translation = record.catalog_translations.find_or_initialize_by(locale: locale)
+  translation.update!(attributes)
+end
+
 verified_at = Time.zone.local(2026, 9, 10, 12)
 
 source_attributes = {
@@ -87,6 +92,7 @@ units = [
 ].each_with_index.to_h do |(code, name), position|
   unit = OrganizationalUnit.find_or_initialize_by(institution: lands_commission, code: code)
   unit.update!(name: name, description: "Lands Commission organizational unit.", position: position + 1, active: true)
+  ensure_catalog_translation(unit, attributes: { name: unit.name, description: unit.description })
   [code, unit]
 end
 
@@ -125,18 +131,41 @@ official_search.update!({
     requires_region: false,
     active: true
   )
-  ensure_catalog_translation(service, attributes: { name: service.name, description: service.description }) if defined?(ensure_catalog_translation)
+  ensure_catalog_translation(service, attributes: { name: service.name, description: service.description })
+  french_names = {
+    "registration-of-title" => "Enregistrement du titre foncier",
+    "deed-registration" => "Enregistrement d'un acte",
+    "plan-approval" => "Approbation de plan",
+    "stamping-guidance" => "Guide sur le timbre et les droits de timbre"
+  }
+  french_descriptions = {
+    "registration-of-title" => "Service d'enregistrement d'un titre foncier auprès de la Commission des terres.",
+    "deed-registration" => "Service d'enregistrement d'un acte auprès de la Commission des terres.",
+    "plan-approval" => "Service d'approbation des plans assuré par la Division de l'arpentage et de la cartographie.",
+    "stamping-guidance" => "Informations officielles sur l'évaluation et les procédures de timbre."
+  }
+  ensure_catalog_translation(service, locale: "fr", attributes: { name: french_names.fetch(slug), description: french_descriptions.fetch(slug) })
   link = ServiceSource.find_or_initialize_by(public_service: service, source: sources.fetch(:lands_contact))
   link.update!(purpose: "Official Lands Commission service information", primary: true)
 end
 
-def ensure_catalog_translation(record, locale: "en", attributes: {})
-  translation = record.catalog_translations.find_or_initialize_by(locale: locale)
-  translation.update!(attributes)
-end
-
 ensure_catalog_translation(lands_commission, attributes: { name: lands_commission.name, description: lands_commission.description })
 ensure_catalog_translation(official_search, attributes: { name: official_search.name, description: official_search.description })
+
+# Curated French labels for the catalogue's primary public entry points. Legal
+# source wording remains in its authoritative form.
+ensure_catalog_translation(lands_commission, locale: "fr", attributes: { name: "Commission des terres du Ghana" })
+units.each_value do |unit|
+  french_name = {
+    "General Services" => "Services généraux",
+    "Survey & Mapping Division" => "Division de l'arpentage et de la cartographie",
+    "Land Valuation Division" => "Division de l'évaluation foncière",
+    "Public & Vested Lands Management Division" => "Division de la gestion des terres publiques et dévolues",
+    "Land Registration Division" => "Division de l'enregistrement foncier"
+  }[unit.name] || unit.name
+  ensure_catalog_translation(unit, locale: "fr", attributes: { name: french_name })
+end
+ensure_catalog_translation(official_search, locale: "fr", attributes: { name: "Recherche officielle / consolidée", description: "Demandez une recherche officielle pour vérifier les informations enregistrées sur une parcelle." })
 
 # The catalogue entries above remain directory-only until authoritative,
 # service-specific requirements or fees have been curated. Seeds deliberately
@@ -168,6 +197,7 @@ end
 ].each do |position, name, description, source|
   step = ProcessStep.find_or_initialize_by(public_service: official_search, position: position)
   step.update!({ name: name, description: description, source: source, active: false })
+  ensure_catalog_translation(step, attributes: { name: step.name, description: step.description })
 end
 
 [
@@ -178,6 +208,7 @@ end
 ].each do |position, name, description, source|
   step = ProcessStep.find_or_initialize_by(public_service: official_search, position: position + 3)
   step.update!({ name: name, description: description, source: source, active: true })
+  ensure_catalog_translation(step, attributes: { name: step.name, description: step.description })
 end
 
 duration_rule = ServiceRule.find_or_initialize_by(
@@ -213,6 +244,7 @@ duration_rule.update!({
     active: true
   }
   path.save!
+  ensure_catalog_translation(path, attributes: { title: path.title, instructions: path.instructions })
 end
 
 [
@@ -233,6 +265,7 @@ end
     position: %i[contact complaint rti administrative_redress].index(resource_type) + 1,
     active: true
   })
+  ensure_catalog_translation(resource, attributes: { name: resource.name, description: resource.purpose, instructions: resource.instructions })
 end
 
 sources.each do |key, source|

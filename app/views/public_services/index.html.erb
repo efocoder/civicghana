@@ -13,7 +13,7 @@
           <% if @public_services.first %>
             <%= link_to t("homepage.view_guide"), public_service_path(@public_services.first.slug), class: "btn btn-primary" %>
             <% if @public_services.first.tracking_available? %>
-              <%= link_to "Check an application", new_case_path(service_slug: @public_services.first.slug), class: "btn btn-outline" %>
+              <%= link_to t("common.check_application"), new_case_path(service_slug: @public_services.first.slug), class: "btn btn-outline" %>
             <% end %>
           <% end %>
         </div>
@@ -63,7 +63,7 @@
           <div class="flex flex-wrap items-center gap-2 text-sm">
             <span class="badge badge-neutral"><%= service.institution.country.name %></span>
             <span class="text-base-content/60"><%= service.institution.translated_name %></span>
-            <% if service.organizational_unit %><span class="badge badge-ghost"><%= service.organizational_unit.name %></span><% end %>
+            <% if service.organizational_unit %><span class="badge badge-ghost"><%= service.organizational_unit.translated_name %></span><% end %>
             <span class="badge badge-outline" title="CivicRoute support available for this service">
               <%= { "directory" => "Information available", "guided" => "Verified guide available", "trackable" => "Application tracking supported" }.fetch(service.support_level.to_s, "Information available") %>
             </span>
@@ -73,9 +73,9 @@
             <p class="mt-2 leading-7 text-base-content/75 text-sm lg:text-base"><%= service.translated_description %></p>
           </div>
           <div class="card-actions justify-end">
-            <%= link_to(service.directory? ? "View service" : "View verified guide", public_service_path(service.slug), class: "btn btn-primary btn-sm") %>
+            <%= link_to(service.directory? ? t("common.view_service") : t("common.view_guide"), public_service_path(service.slug), class: "btn btn-primary btn-sm") %>
             <% if service.tracking_available? %>
-              <%= link_to "Check application", new_case_path(service_slug: service.slug), class: "btn btn-outline btn-sm" %>
+              <%= link_to t("common.check_application"), new_case_path(service_slug: service.slug), class: "btn btn-outline btn-sm" %>
             <% end %>
           </div>
         </div>
@@ -85,7 +85,7 @@
       <div class="civic-surface col-span-full p-8 text-center" role="status">
         <h3 class="text-xl font-bold">No services available</h3>
         <p class="mt-2 text-base-content/70">Try changing your search or filters.</p>
-        <%= link_to "Clear filters", root_path, class: "btn btn-outline btn-sm mt-4" %>
+        <%= link_to t("common.clear_filters"), root_path, class: "btn btn-outline btn-sm mt-4" %>
       </div>
     <% end %>
   </div>

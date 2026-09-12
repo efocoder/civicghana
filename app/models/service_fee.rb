@@ -1,4 +1,5 @@
 class ServiceFee < ApplicationRecord
+  include CatalogTranslatable
   belongs_to :public_service
   belongs_to :service_variant, optional: true
   belongs_to :source

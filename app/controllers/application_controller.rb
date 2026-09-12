@@ -1,26 +1,34 @@
 class ApplicationController < ActionController::Base
-  private
   around_action :switch_locale
+
+  # Include the active locale in every generated URL so navigation, forms,
+  # redirects and Turbo requests stay in the language the citizen selected.
+  def default_url_options
+    { locale: I18n.locale.to_s }
+  end
 
   private
 
   def switch_locale(&action)
-    locale = extract_locale
+    locale = resolve_locale
+    session[:locale] = locale.to_s
     I18n.with_locale(locale, &action)
   end
 
-  def extract_locale
-    if params[:locale].present? && I18n.available_locales.include?(params[:locale].to_sym)
-      cookies[:locale] = { value: params[:locale], expires: 1.year.from_now }
-      params[:locale].to_sym
-    elsif cookies[:locale].present? && I18n.available_locales.include?(cookies[:locale].to_sym)
-      cookies[:locale].to_sym
+  def resolve_locale
+    requested = params[:locale].to_s
+    available = I18n.available_locales.map(&:to_s)
+    selected = if available.include?(requested)
+      requested
+    elsif available.include?(session[:locale].to_s)
+      session[:locale].to_s
+    elsif available.include?(cookies[:locale].to_s)
+      cookies[:locale].to_s
     else
-      I18n.default_locale
+      I18n.default_locale.to_s
     end
+    cookies[:locale] = { value: selected, expires: 1.year.from_now }
+    selected.to_sym
   end
 
-  def default_url_options
-    { locale: I18n.locale == I18n.default_locale ? nil : I18n.locale }
-  end
 end

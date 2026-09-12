@@ -1,4 +1,5 @@
 class OrganizationalUnit < ApplicationRecord
+  include CatalogTranslatable
   belongs_to :institution
   has_many :public_services, dependent: :restrict_with_error
 

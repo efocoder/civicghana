@@ -14,7 +14,7 @@ export default class extends Controller {
 
     const utterance = new SpeechSynthesisUtterance(this.textTarget.textContent.trim())
     const locale = document.documentElement.lang
-    utterance.lang = { tw: "ak-GH", ee: "ee-GH", fr: "fr-FR" }[locale] || "en-GH"
+    utterance.lang = { fr: "fr-FR" }[locale] || "en-GH"
     utterance.rate = 0.9
 
     this.buttonTarget.textContent = "Listening..."

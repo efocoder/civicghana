@@ -6,6 +6,7 @@ en:
 
   nav:
     services: "Services"
+    how_it_works: "How CivicRoute works"
     back_to_services: "All services"
     back_to_service_guide: "Back to service guide"
     back_to_assessment: "Back to assessment"
@@ -19,6 +20,8 @@ en:
     view_guide: "View verified service guide"
 
   service:
+    requirements: "Requirements"
+    verified_fees: "Verified fees"
     verified_source: "Verified source"
     official_fact: "Official fact"
     source: "Source"
@@ -76,6 +79,7 @@ en:
     based_on: "Based on:"
     insufficient_info: "Insufficient information"
     insufficient_info_detail: "The verified published rule is measured from %{anchor}, but no %{anchor} date was provided."
+    understand: "Understand what this means"
 
   evidence:
     title: "Evidence summary"
@@ -126,6 +130,9 @@ en:
     shorter: "Shorter"
     more_formal: "More formal"
     plain_language: "Plain language"
+    status_update: "A clearer status or update"
+    service_problem: "Resolution of a service problem"
+    specific_information: "Access to specific records"
 
   ai:
     explain_assessment: "Explain my assessment"
@@ -140,3 +147,21 @@ en:
 
   offline:
     message: "You are offline. Previously cached public service information remains available. Saving case updates and using the AI assistant require a connection."
+
+  statuses:
+    pending: "Pending"
+    not_completed: "Not completed"
+    completed: "Completed"
+    in_progress: "In progress"
+  common:
+    view_service: "View service"
+    view_guide: "View verified guide"
+    check_application: "Check application"
+    clear_filters: "Clear filters"
+    read_source: "Read source"
+    open_source: "Open official source"
+    open_resource: "Open resource"
+    verify_fee_source: "Verify fee source"
+    ask: "Ask CivicRoute"
+    back: "Back"
+    record_update: "Record an update"

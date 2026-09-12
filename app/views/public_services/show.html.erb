@@ -23,7 +23,7 @@
         <span class="badge badge-outline">
           <%= { "directory" => "Information available", "guided" => "Verified guide available", "trackable" => "Application tracking supported" }.fetch(@public_service.support_level.to_s, "Information available") %>
         </span>
-        <% if @public_service.organizational_unit %><span class="badge badge-ghost"><%= @public_service.organizational_unit.name %></span><% end %>
+        <% if @public_service.organizational_unit %><span class="badge badge-ghost"><%= @public_service.organizational_unit.translated_name %></span><% end %>
       </div>
     </div>
 
@@ -63,7 +63,7 @@
           </dl>
 
           <div class="card-actions mt-3">
-            <%= link_to "Read the authoritative source", @duration_rule.source.url,
+            <%= link_to t("service.read_source"), @duration_rule.source.url,
               class: "btn btn-outline btn-success", target: "_blank", rel: "noopener noreferrer" %>
           </div>
 
@@ -101,7 +101,7 @@
           <form data-action="submit->ai#ask" class="flex flex-col gap-2 sm:flex-row">
             <input type="hidden" name="service_slug" value="<%= @public_service.slug %>">
             <input type="text" name="question" placeholder="Ask about the verified service information" class="input input-bordered flex-1" maxlength="500">
-            <button type="submit" data-ai-target="button" class="btn btn-primary w-full sm:w-auto">Ask CivicRoute</button>
+            <button type="submit" data-ai-target="button" class="btn btn-primary w-full sm:w-auto"><%= t("ai.ask_button") %></button>
           </form>
           <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm mt-2"></span>
           <div data-ai-target="error" class="hidden alert alert-warning mt-3 text-sm"></div>
@@ -109,7 +109,7 @@
             <p class="text-xs text-base-content/40 mb-2">AI-generated explanation based on verified CivicRoute sources</p>
             <p data-ai-target="answer" class="text-sm text-base-content/80 whitespace-pre-wrap"></p>
             <div data-ai-target="sources" class="mt-3 pt-3 border-t border-base-300">
-              <p class="text-xs font-semibold text-base-content/50 mb-1">Verified sources used</p>
+              <p class="text-xs font-semibold text-base-content/50 mb-1"><%= t("ai.sources_used") %></p>
             </div>
           </div>
         </div>
@@ -119,12 +119,12 @@
 
     <% if @public_service.requirements.active.any? %>
       <section class="mt-8" aria-labelledby="requirements-title">
-        <h2 id="requirements-title" class="text-2xl font-bold">Requirements</h2>
+        <h2 id="requirements-title" class="text-2xl font-bold"><%= t("service.requirements") %></h2>
         <ul class="mt-4 space-y-3">
           <% @public_service.requirements.active.ordered.each do |requirement| %>
             <li class="rounded-box border border-base-300 bg-base-100 p-4">
-              <p class="font-semibold"><%= requirement.title %><%= " (required)" if requirement.mandatory? %></p>
-              <% if requirement.description.present? %><p class="text-sm text-base-content/70"><%= requirement.description %></p><% end %>
+              <p class="font-semibold"><%= requirement.translated_title %><%= " (required)" if requirement.mandatory? %></p>
+              <% if requirement.translated_description.present? %><p class="text-sm text-base-content/70"><%= requirement.translated_description %></p><% end %>
             </li>
           <% end %>
         </ul>
@@ -133,13 +133,13 @@
 
     <% if @public_service.service_fees.active.any? %>
       <section class="mt-8" aria-labelledby="fees-title">
-        <h2 id="fees-title" class="text-2xl font-bold">Verified fees</h2>
+        <h2 id="fees-title" class="text-2xl font-bold"><%= t("service.verified_fees") %></h2>
         <div class="mt-4 space-y-3">
           <% @public_service.service_fees.active.ordered.each do |fee| %>
             <article class="rounded-box border border-base-300 bg-base-100 p-4">
-              <p class="font-semibold"><%= fee.name %></p>
+              <p class="font-semibold"><%= fee.translated_name %></p>
               <p class="text-sm text-base-content/70"><%= fee.amount ? number_to_currency(fee.amount, unit: "#{fee.currency} ") : "See the authoritative source for the current amount." %></p>
-              <%= link_to "Verify fee source", fee.source.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %>
+              <%= link_to t("common.verify_fee_source"), fee.source.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %>
             </article>
           <% end %>
         </div>
@@ -172,7 +172,7 @@
           <article class="rounded-box border border-base-300 bg-base-100 p-4">
             <p class="font-semibold"><%= source.title %></p>
             <p class="text-sm text-base-content/70"><%= link.purpose %><%= " · Primary" if link.primary? %></p>
-            <%= link_to "Open official source", source.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %>
+                <%= link_to t("common.open_source"), source.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %>
           </article>
         <% end %>
       </div>
@@ -184,9 +184,9 @@
         <div class="mt-4 space-y-3">
           <% @public_service.action_resources.active.verified.ordered.each do |resource| %>
             <article class="rounded-box border border-base-300 bg-base-100 p-4">
-              <p class="font-semibold"><%= resource.name %></p>
-              <p class="text-sm text-base-content/70"><%= resource.purpose %></p>
-              <% if resource.url.present? %><%= link_to "Open resource", resource.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %><% end %>
+              <p class="font-semibold"><%= resource.translated_name %></p>
+              <p class="text-sm text-base-content/70"><%= resource.translated_description %></p>
+              <% if resource.url.present? %><%= link_to t("common.open_resource"), resource.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %><% end %>
             </article>
           <% end %>
         </div>
@@ -200,7 +200,7 @@
         <% if @public_service.tracking_available? %>
           <h2 class="card-title">Ready to check your case?</h2>
           <p class="text-sm leading-6 text-base-content/70">Compare what you can currently see about your application with the verified public-service information available in CivicRoute.</p>
-          <%= link_to "Start checking my case", new_case_path(service_slug: @public_service.slug), class: "btn btn-primary" %>
+          <%= link_to t("service.start_checking"), new_case_path(service_slug: @public_service.slug), class: "btn btn-primary" %>
         <% else %>
           <h2 class="card-title">Service support</h2>
           <p class="alert alert-info text-sm">This service currently provides <%= @public_service.support_level %> information. Case assessment is not enabled.</p>

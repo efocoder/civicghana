@@ -47,7 +47,10 @@ module Ai
       Preserve all factual content exactly.
     PROMPT
 
-    def self.system_prompt = SYSTEM_PROMPT
+    def self.system_prompt(response_language: I18n.locale)
+    language_name = response_language.to_s == "fr" ? "French" : "English"
+      "#{SYSTEM_PROMPT}\n\nRespond in the user's selected CivicRoute language: #{language_name}. Keep official source titles and statutory wording in their authoritative form."
+    end
 
     def self.draft_guardrails = DRAFT_GUARDRAILS
 

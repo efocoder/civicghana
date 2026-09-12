@@ -128,7 +128,7 @@
                 <% status = status_record.name %>
                 <option value="<%= status %>"
                   <%= "selected" if params.dig(:milestones, step.id.to_s) == status %>>
-                  <%= status %>
+                  <%= t("statuses.#{status_record.code}", default: status_record.name) %>
                 </option>
               <% end %>
             </select>

@@ -1,4 +1,5 @@
 class ServiceVariant < ApplicationRecord
+  include CatalogTranslatable
   belongs_to :public_service
   has_many :requirements, dependent: :restrict_with_error
   has_many :service_fees, dependent: :restrict_with_error

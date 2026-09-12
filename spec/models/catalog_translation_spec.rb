@@ -10,10 +10,10 @@ RSpec.describe CatalogTranslation, type: :model do
 
   it "provides translated values with English fallback" do
     service.catalog_translations.create!(locale: "en", name: "English name", description: "English description")
-    service.catalog_translations.create!(locale: "tw", name: "Twi name", description: "Twi description")
+    service.catalog_translations.create!(locale: "fr", name: "Nom français", description: "Description française")
 
-    expect(service.translated_name(:tw)).to eq("Twi name")
-    expect(service.translated_description(:tw)).to eq("Twi description")
-    expect(service.translated_name(:fr)).to eq("English name")
+    expect(service.translated_name(:fr)).to eq("Nom français")
+    expect(service.translated_description(:fr)).to eq("Description française")
+    expect(service.translated_name(:de)).to eq("English name")
   end
 end
