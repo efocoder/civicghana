@@ -29,10 +29,7 @@
             <span class="badge badge-ghost">Official fact</span>
           </div>
           <h2 id="official-rule-title" class="card-title text-2xl">Official search result: <%= @duration_rule.value %> <%= @duration_rule.unit %></h2>
-          <p class="leading-7">
-            The Lands Commission is required to issue the result of an official search within
-            <strong><%= @duration_rule.value %> days after payment</strong> of the prescribed fees.
-          </p>
+          <p class="leading-7"><%= @duration_rule.source.summary %></p>
 
           <div class="divider"></div>
 
@@ -93,10 +90,10 @@
       <div class="card border border-base-300 bg-base-100">
         <div class="card-body">
           <h2 class="card-title text-lg">Ask about this service</h2>
-          <p class="text-sm text-base-content/60 mb-3">Ask a question about Official / Consolidated Search. CivicRoute will answer using only verified sources.</p>
+          <p class="text-sm text-base-content/60 mb-3">Ask a question about <%= @public_service.translated_name %>. CivicRoute will answer using only verified sources.</p>
           <form data-action="submit->ai#ask" class="flex gap-2">
             <input type="hidden" name="service_slug" value="<%= @public_service.slug %>">
-            <input type="text" name="question" placeholder="e.g. What does Section 222 mean?" class="input input-bordered input-sm flex-1" maxlength="500">
+            <input type="text" name="question" placeholder="Ask about the verified service information" class="input input-bordered input-sm flex-1" maxlength="500">
             <button type="submit" data-ai-target="button" class="btn btn-primary btn-sm">Ask CivicRoute</button>
           </form>
           <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm mt-2"></span>
@@ -116,7 +113,7 @@
       <h2 id="public-steps-title" class="text-2xl font-bold">Published public journey</h2>
       <p class="mt-2 text-base-content/70">These steps explain the public process; they do not claim to show the institution's internal workflow.</p>
       <ol class="mt-5 space-y-3">
-        <% @public_service.process_steps.each do |step| %>
+        <% @public_service.process_steps.active.each do |step| %>
           <li class="flex gap-4 rounded-box border border-base-300 bg-base-100 p-4">
             <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-content"><%= step.sequence %></span>
             <div>
@@ -127,6 +124,35 @@
         <% end %>
       </ol>
     </section>
+
+    <section class="mt-8" aria-labelledby="sources-title">
+      <h2 id="sources-title" class="text-2xl font-bold">Verified sources</h2>
+      <div class="mt-4 space-y-3">
+        <% @public_service.service_sources.includes(:source).each do |link| %>
+          <% source = link.source %>
+          <article class="rounded-box border border-base-300 bg-base-100 p-4">
+            <p class="font-semibold"><%= source.title %></p>
+            <p class="text-sm text-base-content/70"><%= link.purpose %><%= " · Primary" if link.primary? %></p>
+            <%= link_to "Open official source", source.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %>
+          </article>
+        <% end %>
+      </div>
+    </section>
+
+    <% if @public_service.action_resources.active.verified.any? %>
+      <section class="mt-8" aria-labelledby="resources-title">
+        <h2 id="resources-title" class="text-2xl font-bold">Official action resources</h2>
+        <div class="mt-4 space-y-3">
+          <% @public_service.action_resources.active.verified.ordered.each do |resource| %>
+            <article class="rounded-box border border-base-300 bg-base-100 p-4">
+              <p class="font-semibold"><%= resource.name %></p>
+              <p class="text-sm text-base-content/70"><%= resource.purpose %></p>
+              <% if resource.url.present? %><%= link_to "Open resource", resource.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %><% end %>
+            </article>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
   </section>
 
   <aside>
@@ -134,7 +160,11 @@
       <div class="card-body">
         <h2 class="card-title">Ready to check your case?</h2>
         <p class="text-sm leading-6 text-base-content/70">Compare what you can currently see about your application with the verified public-service information available in CivicRoute.</p>
-        <%= link_to "Start checking my case", new_case_path, class: "btn btn-primary" %>
+        <% if @public_service.case_enabled? %>
+          <%= link_to "Start checking my case", new_case_path(service_slug: @public_service.slug), class: "btn btn-primary" %>
+        <% else %>
+          <p class="alert alert-info text-sm">Case assessment is not enabled for this service.</p>
+        <% end %>
         <p class="text-xs text-base-content/60">CivicRoute does not access the institution's internal systems. You remain in control of the information you provide.</p>
       </div>
     </div>

@@ -2,7 +2,7 @@ en:
   civicroute:
     app_name: "CivicRoute Ghana"
     independent_tool: "Independent civic tool"
-    not_affiliated: "CivicRoute is not affiliated with the Lands Commission or any government institution."
+    not_affiliated: "CivicRoute is not affiliated with any government institution."
 
   nav:
     services: "Services"
@@ -48,7 +48,7 @@ en:
     application_details: "Application details"
     check_application: "Check your application"
     compare_description: "Compare what you can currently see about your application with verified public-service information available in CivicRoute."
-    internal_systems_notice: "CivicRoute does not access the Lands Commission's internal systems. Enter only information available to you."
+    internal_systems_notice: "CivicRoute does not access an agency's internal systems. Enter only information available to you."
     completed_date: "Application completed date *"
     completed_help: "Enter the date you finished the application and submitted the required information and supporting documents."
     payment_help: "Payment and completion of the full application may happen on different dates. The verified published rule uses payment as its reference point."
@@ -131,7 +131,7 @@ en:
     explain_assessment: "Explain my assessment"
     why_recommendation: "Why this recommendation?"
     ask_about_service: "Ask about this service"
-    ask_placeholder: "e.g. What does Section 222 mean?"
+    ask_placeholder: "Ask about the verified service information"
     ask_button: "Ask CivicRoute"
     ai_label: "AI-generated explanation based on verified CivicRoute sources"
     sources_used: "Verified sources used"

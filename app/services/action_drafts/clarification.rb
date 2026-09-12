@@ -45,7 +45,7 @@ module ActionDrafts
         lines << format_date(observation.observed_on)
         lines << ""
 
-        milestones = observation.case_milestone_observations.includes(:process_step).order("process_steps.sequence")
+        milestones = observation.case_milestone_observations.includes(:process_step).order("process_steps.position")
         if milestones.any?
           lines << "At that time, it showed:"
           milestones.each do |m|

@@ -33,6 +33,7 @@ services:
       TEST_DB_NAME: civicroute_test
       BINDING: 0.0.0.0
       PORT: 3000
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     depends_on:
       db:
         condition: service_healthy

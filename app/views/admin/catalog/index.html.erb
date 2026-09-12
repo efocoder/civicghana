@@ -1,0 +1,21 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-3xl font-bold"><%= resource_title %></h1>
+  <%= link_to "Add #{resource_class.model_name.human}", url_for(action: :new), class: "btn btn-primary" %>
+</div>
+<div class="overflow-x-auto bg-base-100 rounded-box">
+  <table class="table">
+    <thead><tr><th>Name / identifier</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+      <% @records.each do |record| %>
+        <tr>
+          <td><%= record.try(:name).presence || record.try(:title).presence || record.try(:section_label).presence || record.id %></td>
+          <td><%= record.respond_to?(:active) ? (record.active? ? "Yes" : "No") : "—" %></td>
+          <td class="flex justify-end gap-2">
+            <%= link_to "Edit", url_for(action: :edit, id: record), class: "btn btn-sm" %>
+            <%= button_to "Delete", url_for(action: :destroy, id: record), method: :delete, class: "btn btn-sm btn-error", form: { data: { turbo_confirm: "Delete this configuration?" } } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

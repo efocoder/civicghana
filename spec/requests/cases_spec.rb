@@ -14,7 +14,7 @@ RSpec.describe "Cases", type: :request do
     it "contains the trust notice" do
       get new_case_path
 
-      expect(response.body).to include("CivicRoute does not access the Lands Commission")
+      expect(response.body).to include("CivicRoute does not access an agency")
     end
 
     it "links back to the service guide" do

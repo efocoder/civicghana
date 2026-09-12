@@ -1,0 +1,26 @@
+<%= form_with model: [:admin, @record], url: @record.persisted? ? url_for(action: :update, id: @record) : url_for(action: :create), class: "space-y-4" do |form| %>
+  <% if @record.errors.any? %><div class="alert alert-error"><%= @record.errors.full_messages.to_sentence %></div><% end %>
+  <% form_fields.each do |attribute| %>
+    <div class="form-control">
+      <%= form.label attribute, class: "label font-semibold" %>
+      <% options = field_options(attribute) %>
+      <% column_type = resource_class.attribute_types[attribute.to_s]&.type %>
+      <% if options %>
+        <%= form.select attribute, options_for_select(options, @record.public_send(attribute)), { include_blank: true }, class: "select select-bordered" %>
+      <% elsif column_type == :boolean %>
+        <%= form.check_box attribute, class: "checkbox checkbox-primary" %>
+      <% elsif column_type == :text %>
+        <%= form.text_area attribute, class: "textarea textarea-bordered", rows: 4 %>
+      <% elsif column_type == :date %>
+        <%= form.date_field attribute, class: "input input-bordered" %>
+      <% elsif column_type == :datetime %>
+        <%= form.datetime_local_field attribute, class: "input input-bordered" %>
+      <% elsif column_type == :integer %>
+        <%= form.number_field attribute, class: "input input-bordered" %>
+      <% else %>
+        <%= form.text_field attribute, class: "input input-bordered" %>
+      <% end %>
+    </div>
+  <% end %>
+  <div class="flex gap-2"><%= form.submit class: "btn btn-primary" %><%= link_to "Cancel", collection_path, class: "btn" %></div>
+<% end %>

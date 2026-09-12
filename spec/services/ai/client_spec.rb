@@ -48,5 +48,16 @@ RSpec.describe Ai::Client do
         described_class.generate(system_prompt: "test", user_prompt: "test")
       }.to raise_error(Ai::Client::ProviderError)
     end
+
+    it "raises ProviderError on provider rate limits without retrying" do
+      client = instance_double(OpenAI::Client)
+      allow(OpenAI::Client).to receive(:new).and_return(client)
+      allow(client).to receive(:chat).and_raise(Faraday::TooManyRequestsError.new("rate limited"))
+
+      expect {
+        described_class.generate(system_prompt: "test", user_prompt: "test")
+      }.to raise_error(Ai::Client::ProviderError, /rate limit/)
+      expect(client).to have_received(:chat).once
+    end
   end
 end

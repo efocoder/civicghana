@@ -26,8 +26,8 @@ RSpec.describe "Public service guide", type: :system do
     visit public_service_path("official-consolidated-search")
     click_link "Start checking my case"
 
-    expect(page).to have_current_path(new_case_path)
+    expect(page).to have_current_path(new_case_path(service_slug: "official-consolidated-search"))
     expect(page).to have_content("Check your application")
-    expect(page).to have_content("CivicRoute does not access the Lands Commission")
+    expect(page).to have_content("CivicRoute does not access an agency's internal systems")
   end
 end

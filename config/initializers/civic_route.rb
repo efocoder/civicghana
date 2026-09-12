@@ -18,14 +18,8 @@ module CivicRoute
     "Western North"
   ].freeze
 
-  PORTAL_STATUSES = [
-    "Pending",
-    "Completed",
-    "Not Completed"
-  ].freeze
-
   EVIDENCE_SOURCES = {
-    portal: "Lands Commission portal",
+    portal: "Public service portal",
     phone: "Phone call",
     in_person: "In-person conversation",
     email: "Email",

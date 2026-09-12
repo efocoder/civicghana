@@ -70,7 +70,7 @@ module CaseAssessment
         )
       end
 
-      deadline = anchor_date + rule.value.days
+      deadline = calculate_deadline(anchor_date, rule)
       days_remaining = (deadline - assessment_date).to_i
       days_beyond = days_remaining.negative? ? days_remaining.abs : 0
 
@@ -106,6 +106,17 @@ module CaseAssessment
         case_record.portal_created_on
       else
         nil
+      end
+    end
+
+    def calculate_deadline(anchor_date, rule)
+      unit = rule.duration_unit.to_s.downcase
+      if unit.include?("month")
+        anchor_date.advance(months: rule.duration_value)
+      elsif unit.include?("week")
+        anchor_date + rule.duration_value.weeks
+      else
+        anchor_date + rule.duration_value.days
       end
     end
   end

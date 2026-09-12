@@ -17,8 +17,11 @@ class ServiceRule < ApplicationRecord
   belongs_to :public_service
   belongs_to :source
 
+  alias_attribute :value, :duration_value
+  alias_attribute :unit, :duration_unit
+
   validates :value, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-  validates :unit, :effective_from, :verified_at, presence: true
+  validates :duration_unit, :effective_from, :verified_at, presence: true
   validate :effective_period_is_valid
 
   scope :verified, -> { where(active: true).where.not(verified_at: nil) }

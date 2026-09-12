@@ -4,7 +4,7 @@ class AssistantsController < ApplicationController
 
   def ask
     question = params[:question].to_s.strip
-    service = params[:service_slug].present? ? PublicService.find_by(slug: params[:service_slug]) : nil
+    service = PublicService.find_by(slug: params[:service_slug], active: true)
 
     result = Ai::AnswerQuestion.call(question: question, service: service)
 
@@ -106,12 +106,18 @@ class AssistantsController < ApplicationController
   end
 
   def check_rate_limit
-    session_key = :ai_request_count
-    session[session_key] ||= 0
-    session[session_key] += 1
-
-    if session[session_key] > 20
-      render json: { error: "Rate limit exceeded. Please try again later." }, status: :too_many_requests
+    now = Time.current.to_i
+    bucket = session[:ai_rate_limit]
+    if bucket.blank? || now - bucket.fetch("started_at", now) >= 60
+      bucket = { "started_at" => now, "count" => 0 }
     end
+
+    if bucket.fetch("count", 0) >= 20
+      render json: { error: "Rate limit exceeded. Please try again later." }, status: :too_many_requests
+      return
+    end
+
+    bucket["count"] += 1
+    session[:ai_rate_limit] = bucket
   end
 end

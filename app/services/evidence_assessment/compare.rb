@@ -147,10 +147,17 @@ module EvidenceAssessment
 
     def portal_progress_position(observation)
       milestones = observation.case_milestone_observations.includes(:process_step)
-      pending_steps = milestones.select { |m| m.status == "Pending" }
-      return 0 if pending_steps.empty?
+      status_options = @case_record.public_service.portal_statuses.active.index_by { |option| option.name }
+      ranked = milestones.filter_map do |milestone|
+        option = status_options[milestone.status] || status_options.values.find { |candidate| candidate.code == milestone.status }
+        next unless option
 
-      pending_steps.map { |m| m.process_step.sequence }.min
+        [milestone.process_step.position, option.position]
+      end
+      return 0 if ranked.empty?
+
+      current_status_position = ranked.map(&:last).min
+      ranked.select { |_, status_position| status_position == current_status_position }.map(&:first).min
     end
 
     def claimed_progress_position(observation)

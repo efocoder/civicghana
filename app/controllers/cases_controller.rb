@@ -1,8 +1,10 @@
 class CasesController < ApplicationController
   def new
     @case = Case.new
-    @public_service = PublicService.includes(:catalog_translations, process_steps: :catalog_translations, institution: [:catalog_translations, :country]).find_by!(slug: params[:service_slug] || "official-consolidated-search")
-    @tracking_steps = @public_service.process_steps.where("sequence >= 4").order(:sequence)
+    services = PublicService.includes(:catalog_translations, process_steps: :catalog_translations, institution: [:catalog_translations, :country])
+      .where(active: true, case_enabled: true)
+    @public_service = params[:service_slug].present? ? services.find_by!(slug: params[:service_slug]) : services.order(:name).first!
+    @tracking_steps = @public_service.process_steps.active
     @regions = @public_service.institution.country.regions.active.order(:name)
     @portal_statuses = @public_service.portal_statuses.active
   end
@@ -19,7 +21,7 @@ class CasesController < ApplicationController
     end
 
     @case.public_service = @public_service
-    @tracking_steps = @public_service.process_steps.where("sequence >= 4").order(:sequence)
+    @tracking_steps = @public_service.process_steps.active
     @regions = @public_service.institution.country.regions.active.order(:name)
     @portal_statuses = @public_service.portal_statuses.active
     @observation = @case.case_observations.build(observation_params)

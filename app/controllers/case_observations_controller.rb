@@ -3,13 +3,13 @@ class CaseObservationsController < ApplicationController
 
   def new
     @observation = @case.case_observations.build(observed_on: Date.current)
-    @tracking_steps = @case.public_service.process_steps.where("sequence >= 4").order(:sequence)
+    @tracking_steps = @case.public_service.process_steps.active
     @portal_statuses = @case.public_service.portal_statuses.active
   end
 
   def create
     @observation = @case.case_observations.build(observation_params)
-    @tracking_steps = @case.public_service.process_steps.where("sequence >= 4").order(:sequence)
+    @tracking_steps = @case.public_service.process_steps.active
     @portal_statuses = @case.public_service.portal_statuses.active
     milestones = submitted_milestones
 

@@ -35,7 +35,7 @@ RSpec.describe "Evidence recording", type: :request do
     it "displays all evidence source options" do
       get new_case_observation_path(kase)
 
-      expect(response.body).to include("Lands Commission portal")
+      expect(response.body).to include("Public service portal")
       expect(response.body).to include("Phone call")
       expect(response.body).to include("In-person conversation")
       expect(response.body).to include("Email")

@@ -2,7 +2,7 @@ tw:
   civicroute:
     app_name: "CivicRoute Ghana"
     independent_tool: "Adwumayɛbea a ɛyɛ ankasa"
-    not_affiliated: "CivicRoute nka Lands Commission anaa aban adwumayɛbea biara ho."
+    not_affiliated: "CivicRoute nka aban adwumayɛbea biara ho."
 
   nav:
     services: "Adwumayɛbea"
@@ -113,7 +113,7 @@ tw:
     explain_assessment: "Kyɛ me nhwehwɛmu no mu"
     why_recommendation: "Nɛ nea ɛsɛ sɛ wo yɛ?"
     ask_about_service: "Bisa nsɛm fa adwumayɛbea ho"
-    ask_placeholder: "pɛ. Sɛ Section 222 kyerɛ dɛn?"
+    ask_placeholder: "Bisa ɔman adwuma ho nsɛm a wɔagye atom"
     ask_button: "Bisa CivicRoute"
     ai_label: "AI na ɔyɛe no, nanso efi CivicRoute nkwa mu"
     sources_used: "Nkwa mu a wɔde adi dwuma"

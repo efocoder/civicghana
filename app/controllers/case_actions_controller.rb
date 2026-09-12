@@ -89,9 +89,9 @@ class CaseActionsController < ApplicationController
     end
     return nil unless resource_type
 
-    institution = @case.public_service.institution
+    service = @case.public_service
     ActionResource.active.verified.joins(:source).merge(Source.verified)
-      .where(institution: institution, resource_type: resource_type).first
+      .where(public_service: service, resource_type: resource_type).ordered.first
   end
 
   def build_draft(action_type)

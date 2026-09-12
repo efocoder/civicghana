@@ -10,8 +10,12 @@
           <%= t("homepage.subtitle") %>
         </p>
         <div class="flex flex-wrap gap-3 mt-6">
-          <%= link_to t("homepage.view_guide"), public_service_path(@public_services.first&.slug || "official-consolidated-search"), class: "btn btn-primary" %>
-          <%= link_to "Check an application", new_case_path, class: "btn btn-outline" %>
+          <% if @public_services.first %>
+            <%= link_to t("homepage.view_guide"), public_service_path(@public_services.first.slug), class: "btn btn-primary" %>
+            <% if @public_services.first.case_enabled? %>
+              <%= link_to "Check an application", new_case_path(service_slug: @public_services.first.slug), class: "btn btn-outline" %>
+            <% end %>
+          <% end %>
         </div>
       </div>
       <div class="flex-shrink-0 w-full lg:w-80">
@@ -58,6 +62,9 @@
           </div>
           <div class="card-actions justify-end">
             <%= link_to t("homepage.view_guide"), public_service_path(service.slug), class: "btn btn-primary btn-sm" %>
+            <% if service.case_enabled? %>
+              <%= link_to "Check application", new_case_path(service_slug: service.slug), class: "btn btn-outline btn-sm" %>
+            <% end %>
           </div>
         </div>
       </article>

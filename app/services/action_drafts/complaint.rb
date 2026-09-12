@@ -39,7 +39,7 @@ module ActionDrafts
         lines << "Relevant portal observations:"
         observations.select(&:portal?).each do |obs|
           lines << "  #{format_date(obs.observed_on)}: Portal snapshot recorded"
-          obs.case_milestone_observations.includes(:process_step).order("process_steps.sequence").each do |m|
+          obs.case_milestone_observations.includes(:process_step).order("process_steps.position").each do |m|
             lines << "    #{m.process_step.name}: #{m.status}"
           end
         end

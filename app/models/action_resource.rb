@@ -2,6 +2,7 @@ class ActionResource < ApplicationRecord
   include CatalogTranslatable
   belongs_to :institution
   belongs_to :source, optional: true
+  belongs_to :public_service, optional: true
 
   enum :resource_type, {
     contact: "contact",
@@ -16,4 +17,9 @@ class ActionResource < ApplicationRecord
   scope :active, -> { where(active: true) }
   scope :verified, -> { where.not(last_verified_at: nil) }
   scope :for_type, ->(type) { where(resource_type: type) }
+  scope :ordered, -> { order(:position, :name) }
+
+  alias_attribute :agency_id, :institution_id
+  alias_method :agency, :institution
+  alias_method :agency=, :institution=
 end

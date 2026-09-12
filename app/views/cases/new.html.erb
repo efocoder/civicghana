@@ -86,14 +86,14 @@
             </label>
           <% end %>
           <label class="label">
-            <span class="label-text-alt text-base-content/60">This is the date labelled "Date Created" on the Lands Commission tracking page. It may be different from when you completed your application.</span>
+            <span class="label-text-alt text-base-content/60">This is the date labelled "Date Created" on the service tracking page. It may be different from when you completed your application.</span>
           </label>
         </div>
 
         <div class="form-control">
           <%= f.label :region, "Region *", class: "label" %>
           <%= f.select :region,
-            options_for_select(CivicRoute::REGIONS, @case.region),
+            options_from_collection_for_select(@regions, :name, :name, @case.region),
             { include_blank: t("case.select_region") },
             class: "select select-bordered w-full #{'select-error' if @case.errors[:region].any?}",
             required: true %>

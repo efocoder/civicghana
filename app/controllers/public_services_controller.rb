@@ -7,7 +7,7 @@ class PublicServicesController < ApplicationController
   end
 
   def show
-    @public_service = PublicService.includes(:catalog_translations, :action_paths, process_steps: :catalog_translations, institution: [:catalog_translations, :country])
+    @public_service = PublicService.includes(:catalog_translations, :action_paths, :sources, :action_resources, process_steps: :catalog_translations, institution: [:catalog_translations, :country])
       .find_by!(slug: params[:slug], active: true)
     @duration_rule = ServiceRules::Resolver.call(
       public_service: @public_service,

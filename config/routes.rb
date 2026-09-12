@@ -26,5 +26,19 @@ Rails.application.routes.draw do
     post :ask
   end
 
+  namespace :admin do
+    root "agencies#index"
+    resources :agencies
+    resources :public_services
+    resources :process_steps
+    resources :status_options
+    resources :service_rules
+    resources :sources
+    resources :service_sources
+    resources :action_resources
+    resources :source_chunks
+    get "ai_diagnostics", to: "ai_diagnostics#show"
+  end
+
   root "public_services#index"
 end

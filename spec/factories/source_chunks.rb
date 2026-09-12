@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :source_chunk do
     association :source
+    association :public_service
     content { "Test chunk content about official search procedures." }
     section_label { nil }
     position { 1 }

@@ -8,6 +8,7 @@ source_attributes = {
     title: "Land Act, 2020 (Act 1036)",
     url: "https://oasl.gov.gh/wp-content/uploads/2023/07/LAND-ACT-2020-ACT-1036.pdf",
     authority_type: :legislation,
+    authority_level: "primary",
     section_label: "Section 222",
     summary: "The Lands Commission shall issue the result of an official search within fourteen days after payment of the prescribed fees.",
     effective_from: Date.new(2020, 12, 23)
@@ -17,6 +18,7 @@ source_attributes = {
     title: "Online Services - Application Status",
     url: "https://onlineservices.lc.gov.gh/vDW0_zcD",
     authority_type: :official_service,
+    authority_level: "official",
     summary: "Official public page for checking an application's visible status using its job number."
   },
   lands_contact: {
@@ -24,6 +26,7 @@ source_attributes = {
     title: "Lands Commission Official Website",
     url: "https://www.lc.gov.gh/",
     authority_type: :official_service,
+    authority_level: "official",
     summary: "Official Lands Commission website for general institutional information and contact routes."
   },
   complaints: {
@@ -31,6 +34,7 @@ source_attributes = {
     title: "Online Services - Feedback & Complaints",
     url: "https://onlineservices.lc.gov.gh/pt886_oXS",
     authority_type: :official_service,
+    authority_level: "official",
     summary: "Official channel for feedback and complaints about Lands Commission services."
   },
   rti: {
@@ -38,6 +42,7 @@ source_attributes = {
     title: "About the Right to Information Commission",
     url: "https://rtic.gov.gh/about/",
     authority_type: :regulator_guidance,
+    authority_level: "regulatory",
     summary: "Official information about Ghana's access-to-information oversight body and mandate."
   },
   chraj: {
@@ -45,6 +50,7 @@ source_attributes = {
     title: "Administrative Justice Mandate",
     url: "https://chraj.gov.gh/administrative-justice-mandate/",
     authority_type: :oversight_body,
+    authority_level: "oversight",
     summary: "Official guidance about CHRAJ's administrative-justice mandate."
   }
 }
@@ -65,6 +71,8 @@ ghana.update!({ name: "Ghana", active: true })
 
 lands_commission = Institution.find_or_initialize_by(country: ghana, name: "Lands Commission")
 lands_commission.update!({
+  slug: "lands-commission",
+  short_name: "LC",
   official_url: "https://www.lc.gov.gh/",
   description: "The public institution responsible for managing and regulating interests in land in Ghana.",
   active: true
@@ -76,6 +84,8 @@ official_search.update!({
   name: "Official / Consolidated Search",
   description: "Check registered land information through the Lands Commission's official search service and understand the published timeframe for receiving a result.",
   service_category: "land_services",
+  service_code: "LC-OFFICIAL-SEARCH",
+  case_enabled: true,
   active: true
 })
 
@@ -91,28 +101,28 @@ CivicRoute::REGIONS.each do |name|
   Region.find_or_create_by!(country: ghana, code: name.parameterize, name: name) { |r| r.active = true }
 end
 
-CivicRoute::PORTAL_STATUSES.each_with_index do |name, index|
-  PortalStatus.find_or_create_by!(public_service: official_search, code: name.parameterize, name: name) do |s|
-    s.position = index
-    s.active = true
-  end
+[["pending", "Pending"], ["completed", "Completed"], ["not-completed", "Not Completed"]].each_with_index do |(code, name), index|
+  status = PortalStatus.find_or_initialize_by(public_service: official_search, code: code)
+  status.update!(name: name, position: index, active: true)
 end
 
 CivicRoute::EVIDENCE_SOURCES.each do |code, name|
-  EvidenceSource.find_or_create_by!(code: code.to_s, name: name) { |e| e.active = true }
+  evidence_source = EvidenceSource.find_or_initialize_by(code: code.to_s)
+  evidence_source.update!(name: name, active: true)
 end
 
 CivicRoute::PROGRESS_CLAIMS.each do |code, name|
-  ProgressClaim.find_or_create_by!(code: code.to_s, name: name) { |p| p.active = true }
+  progress_claim = ProgressClaim.find_or_initialize_by(code: code.to_s)
+  progress_claim.update!(name: name, active: true)
 end
 
 [
   [1, "Submit and pay", "Submit the official-search request and pay the prescribed fees.", sources.fetch(:land_act)],
   [2, "Track the public status", "Use the Lands Commission application-status page to observe the milestone currently visible to you.", sources.fetch(:status_portal)],
   [3, "Receive the search result", "The published rule says the official-search result should be issued within fourteen days after payment.", sources.fetch(:land_act)]
-].each do |sequence, name, description, source|
-  step = ProcessStep.find_or_initialize_by(public_service: official_search, sequence: sequence)
-  step.update!({ name: name, description: description, source: source })
+].each do |position, name, description, source|
+  step = ProcessStep.find_or_initialize_by(public_service: official_search, position: position)
+  step.update!({ name: name, description: description, source: source, active: false })
 end
 
 [
@@ -120,9 +130,9 @@ end
   [2, "Records Verification", "Second tracking milestone shown on the public portal.", sources.fetch(:status_portal)],
   [3, "Report Preparation", "Third tracking milestone shown on the public portal.", sources.fetch(:status_portal)],
   [4, "Vetting and Final Approval", "Fourth tracking milestone shown on the public portal.", sources.fetch(:status_portal)]
-].each do |sequence, name, description, source|
-  step = ProcessStep.find_or_initialize_by(public_service: official_search, sequence: sequence + 3)
-  step.update!({ name: name, description: description, source: source })
+].each do |position, name, description, source|
+  step = ProcessStep.find_or_initialize_by(public_service: official_search, position: position + 3)
+  step.update!({ name: name, description: description, source: source, active: true })
 end
 
 duration_rule = ServiceRule.find_or_initialize_by(
@@ -134,6 +144,8 @@ duration_rule.update!({
   source: sources.fetch(:land_act),
   value: 14,
   unit: "days after payment",
+  name: "Official search result timeframe",
+  description: "Published duration for issuing an official search result after the prescribed fees are paid.",
   verified_at: verified_at,
   active: true,
   anchor_event: :payment
@@ -164,15 +176,23 @@ end
   [:rti, "Right to Information Commission", "Request access to information or records held by a public institution.", "https://rtic.gov.gh/about/", sources.fetch(:rti)],
   [:administrative_redress, "CHRAJ — Administrative Justice", "Seek administrative-justice guidance after unsuccessful attempts to resolve with the institution.", "https://chraj.gov.gh/administrative-justice-mandate/", sources.fetch(:chraj)]
 ].each do |resource_type, name, purpose, url, source|
-  resource = ActionResource.find_or_initialize_by(institution: lands_commission, resource_type: resource_type)
+  resource = ActionResource.find_or_initialize_by(public_service: official_search, resource_type: resource_type)
   resource.update!({
+    institution: lands_commission,
     name: name,
     purpose: purpose,
     url: url,
     source: source,
     last_verified_at: verified_at,
+    instructions: purpose,
+    position: %i[contact complaint rti administrative_redress].index(resource_type) + 1,
     active: true
   })
+end
+
+sources.each do |key, source|
+  link = ServiceSource.find_or_initialize_by(public_service: official_search, source: source)
+  link.update!(purpose: key.to_s.humanize, primary: key == :land_act)
 end
 
 [
@@ -276,16 +296,12 @@ end
     nil
   ]
 ].each do |source, content, section_label, position, heading, page_number, provision|
-  SourceChunk.find_or_create_by!(source: source, position: position) do |chunk|
-    chunk.content = content
-    chunk.section_label = section_label
-    chunk.heading = heading
-    chunk.page_number = page_number
-    chunk.provision = provision
-  end
+  chunk = SourceChunk.find_or_initialize_by(source: source, position: position)
+  chunk.update!(public_service: official_search, content: content, section_label: section_label,
+    heading: heading, page_number: page_number, provision: provision, active: true)
 end
 
-tracking_steps = official_search.process_steps.where("sequence >= 4").order(:sequence)
+tracking_steps = official_search.process_steps.active
 
 demo_case = Case.find_or_create_by!(
   public_service: official_search,
@@ -327,13 +343,4 @@ unless demo_case.case_observations.any?
       status: i == 0 ? "Pending" : "Not Completed"
     )
   end
-end
-
-ActionResource.find_or_create_by!(institution: lands_commission, resource_type: :contact) do |r|
-  r.name = "Lands Commission — Contact & Enquiries"
-  r.purpose = "Request status clarification or an update on your application."
-  r.url = "https://www.lc.gov.gh/"
-  r.source = sources.fetch(:lands_contact)
-  r.last_verified_at = verified_at
-  r.active = true
 end

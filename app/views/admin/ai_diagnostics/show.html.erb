@@ -1,0 +1,12 @@
+<h1 class="text-3xl font-bold mb-6">AI diagnostics</h1>
+<p class="mb-4 text-base-content/70">Most recent in-process request. Credentials and prompt text are never recorded.</p>
+<div class="overflow-x-auto bg-base-100 rounded-box">
+  <table class="table">
+    <tbody>
+      <% @diagnostic.each do |key, value| %>
+        <tr><th><%= key.humanize %></th><td class="font-mono text-sm"><%= value.inspect %></td></tr>
+      <% end %>
+      <% if @diagnostic.empty? %><tr><td>No AI request has been recorded in this process.</td></tr><% end %>
+    </tbody>
+  </table>
+</div>
