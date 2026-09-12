@@ -11,7 +11,7 @@ class PublicServicesController < ApplicationController
       query = "%#{ActiveRecord::Base.sanitize_sql_like(params[:q].strip)}%"
       @public_services = @public_services.where("public_services.name ILIKE ? OR public_services.description ILIKE ?", query, query)
     end
-    @public_services = @public_services.order("countries.name", "institutions.name", "public_services.name")
+    @public_services = @public_services.order(Arel.sql("CASE WHEN public_services.support_level = 'trackable' THEN 0 WHEN public_services.support_level = 'guided' THEN 1 ELSE 2 END"), "countries.name", "institutions.name", "public_services.name")
   end
 
   def show
@@ -19,7 +19,7 @@ class PublicServicesController < ApplicationController
       .find_by!(slug: params[:slug], active: true)
     @duration_rule = ServiceRules::Resolver.call(
       public_service: @public_service,
-      rule_type: :expected_duration_days
+      rule_type: %w[deed-registration registration-of-title].include?(@public_service.slug) ? :service_charter_turnaround : :expected_duration_days
     )
   rescue ServiceRules::Resolver::NotFound
     @duration_rule = nil

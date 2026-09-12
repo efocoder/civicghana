@@ -34,6 +34,14 @@ source_attributes = {
     authority_level: "official",
     summary: "Official Lands Commission website for general institutional information and contact routes."
   },
+  client_charter: {
+    publisher: "Ghana Lands Commission",
+    title: "Lands Commission Client Service Charter",
+    url: "https://www.lc.gov.gh/",
+    authority_type: :official_service,
+    authority_level: "official",
+    summary: "Client Service Charter publishing service targets for Lands Commission registration services."
+  },
   complaints: {
     publisher: "Ghana Lands Commission",
     title: "Online Services - Feedback & Complaints",
@@ -121,7 +129,7 @@ official_search.update!({
   service.update!(
     institution: lands_commission,
     organizational_unit: units.fetch(unit_code),
-    name: name,
+    name: (slug == "registration-of-title" ? "First Registration of Title to Land" : name),
     description: description,
     service_category: "land_services",
     service_code: code,
@@ -133,7 +141,7 @@ official_search.update!({
   )
   ensure_catalog_translation(service, attributes: { name: service.name, description: service.description })
   french_names = {
-    "registration-of-title" => "Enregistrement du titre foncier",
+    "registration-of-title" => "Première immatriculation d'un titre foncier",
     "deed-registration" => "Enregistrement d'un acte",
     "plan-approval" => "Approbation de plan",
     "stamping-guidance" => "Guide sur le timbre et les droits de timbre"
@@ -226,6 +234,27 @@ duration_rule.update!({
   active: true,
   anchor_event: :payment
 })
+
+# These two services are enabled for the same public tracking experience while
+# their catalogue configuration is being expanded. Their records remain
+# separate so they can be curated independently later.
+["registration-of-title", "deed-registration"].each do |slug|
+  service = PublicService.find_by!(slug: slug)
+  service.service_rules.where(rule_type: :expected_duration_days).delete_all
+  service.update!(support_level: :trackable, case_enabled: true, tracks_portal_milestones: false, requires_region: true)
+  journey = if slug == "deed-registration"
+    ["Prepare the registrable instrument", "Ensure the instrument is stamped and plotted", "Submit through the Client Service Access Unit", "Pay the applicable service bill", "Instrument presented to the Registry", "Registration processing", "Instrument entered and registered", "Certificate or registration endorsement", "Registered instrument available"]
+  else
+    ["Purchase and complete the appropriate registration forms", "Submit land documents to CSAU for vetting", "Pay the service bill", "Submit completed forms and payment evidence", "Records verification", "Vetting of application", "Site inspection where necessary", "Title plan preparation", "Publication in the daily newspapers", "Statutory 14-day objection period", "Preparation and issuance of Land Certificate", "Plotting of certificate"]
+  end
+  journey.each_with_index do |step_name, index|
+    source_step = official_search.process_steps.active[index % official_search.process_steps.active.length]
+    step = ProcessStep.find_or_initialize_by(public_service: service, position: index + 1)
+    step.update!(name: step_name, description: "Public journey step; this does not expose internal institutional workflow.", source: sources.fetch(:client_charter), active: true, position: index + 1)
+  end
+  rule = ServiceRule.find_or_initialize_by(public_service: service, rule_type: :service_charter_turnaround, effective_from: duration_rule.effective_from)
+  rule.update!(source: sources.fetch(:client_charter), value: slug == "deed-registration" ? 10 : 65, unit: "working_days", name: "Published service target", description: "Published service target from the Lands Commission Client Service Charter.", verified_at: verified_at, active: true, anchor_event: :completed_application)
+end
 
 [
   [1, :check, "Check the official rule", "Compare the date of payment with the verified official-search duration.", sources.fetch(:land_act)],
@@ -377,6 +406,91 @@ end
   chunk = SourceChunk.find_or_initialize_by(source: source, position: position)
   chunk.update!(public_service: official_search, content: content, section_label: section_label,
     heading: heading, page_number: page_number, provision: provision, active: true)
+end
+
+deed_service = PublicService.find_by!(slug: "deed-registration")
+title_service = PublicService.find_by!(slug: "registration-of-title")
+
+# Production curation from the Lands Commission Deed & Title pack.
+curated_sources = {
+  deed_guide: ["Lands Commission — Deed Registration", "https://www.lc.gov.gh/services/deed-registration/", "Official Deed Registration requirements and service information."],
+  title_guide: ["Lands Commission — Registration (Title)", "https://www.lc.gov.gh/services/registration-title/", "Official title-registration requirements and conditional guidance."],
+  charter: ["Lands Commission — Client Service Charter", "https://www.lc.gov.gh/storage/2023/12/CLIENT-SERVICE-CHARTER.pdf", "Published service targets and public journeys for Lands Commission services."],
+  fees: ["Lands Commission — Fees & Charges", "https://www.lc.gov.gh/fees-charges/", "Current published Lands Commission fees and charges."],
+  contact: ["Lands Commission — Contact Us", "https://www.lc.gov.gh/contact-us/", "Official Lands Commission contact information."],
+  payment: ["Lands Commission Online Payment", "https://onlineservices.lc.gov.gh/tFSa_908", "Official payment page for bills generated by Lands Commission."],
+  deed_notice: ["Lands Commission — Notice of Application for Registration of Deed", "https://www.lc.gov.gh/2025/11/07/land-act-2020-act-1036-notice-of-application-for-registration-of-deed-to-land-10/", "Notice explaining acknowledgement slips, priority and deed registration context."]
+}
+curated_sources = curated_sources.each_with_object({}) do |(key, (title, url, summary)), memo|
+  source = Source.find_or_initialize_by(url: url)
+  source.update!(publisher: "Ghana Lands Commission", title: title, url: url, source_type: "official_service", authority_level: "official", summary: summary, last_verified_at: verified_at, content_hash: Digest::SHA256.hexdigest(summary), active: true)
+  memo[key] = source
+end
+
+{ deed: deed_service, title: title_service }.each do |kind, service|
+  source = kind == :deed ? curated_sources[:deed_guide] : curated_sources[:title_guide]
+  ServiceSource.find_or_initialize_by(public_service: service, source: source).update!(purpose: "Official service requirements", primary: true)
+  ServiceSource.find_or_initialize_by(public_service: service, source: curated_sources[:charter]).update!(purpose: "Published service target and journey", primary: false)
+  ServiceSource.find_or_initialize_by(public_service: service, source: curated_sources[:fees]).update!(purpose: "Current fees and charges", primary: false)
+  ServiceSource.find_or_initialize_by(public_service: service, source: curated_sources[:contact]).update!(purpose: "Official contact route", primary: false)
+end
+
+def ensure_requirement(service, source, position, category, title, mandatory)
+  record = Requirement.find_or_initialize_by(public_service: service, position: position)
+  record.update!(source: source, category: category, title: title, mandatory: mandatory, active: true, description: nil)
+end
+
+deed_requirements = [
+  ["information", "Date of instrument", true], ["information", "Nature/title of instrument", true], ["information", "Names and addresses of the parties", true], ["document", "Signatures of the parties", true], ["information", "Names and addresses of witnesses", true], ["document", "Signatures of witnesses", true], ["document", "Solicitor's stamp/seal", true], ["survey", "Approved plan", true], ["survey", "Owner name, land size and land location must correspond between the site plan and instrument", true], ["survey", "Required Licensed Surveyor and Survey and Mapping Division signatures and dates", true], ["document", "Back of the site plan signed by the parties", true], ["document", "Jurat where the document is thumb-printed or otherwise requires it", false], ["document", "Oath of Proof executed", true], ["document", "Deponent section completed by the grantor's witness", true], ["approval", "Planning comments/approval and layout extract for Stool Land", false], ["document", "Ghana Revenue Authority Tax Clearance Certificate", true], ["supporting_document", "Supporting/recited documents attached", true], ["payment", "Evidence of payment of ground rent where the transaction is not a first registration", false], ["document", "Instrument must be stamped and plotted before submission", true]
+]
+deed_requirements.each_with_index { |(category, title, mandatory), i| ensure_requirement(deed_service, curated_sources[:deed_guide], i + 1, category, title, mandatory) }
+
+title_requirements = deed_requirements[0, 14] + [["approval", "Planning comments/approval with layout extract for Stool Land", false], ["supporting_document", "Supporting/recited documents attached", true], ["approval", "Evidence of concurrence/consent for relevant Stool Land or State Land subsequent transactions", false], ["supporting_document", "Transferor/grantor Land Certificate where applicable", false], ["supporting_document", "Certificate of Incorporation or statutory instrument establishing the corporate body", false], ["supporting_document", "Stamped Power of Attorney", false], ["supporting_document", "Notarization of Power of Attorney executed outside Ghana", false]]
+title_requirements.each_with_index { |(category, title, mandatory), i| ensure_requirement(title_service, curated_sources[:title_guide], i + 1, category, title, mandatory) }
+
+fees = [
+  [deed_service, curated_sources[:fees], "Application for deed registration for residential/commercial/civic/cultural/industrial land", 283.0, "published_schedule"],
+  [title_service, curated_sources[:fees], "Application for First Registration", nil, "published_schedule"],
+  [title_service, curated_sources[:fees], "Inspection within district or regional capital", 75.0, "published_schedule"],
+  [title_service, curated_sources[:fees], "Inspection outside district or regional capital", 150.0, "published_schedule"]
+]
+fees.each do |service, source, name, amount, calculation_type|
+  fee = ServiceFee.find_or_initialize_by(public_service: service, source: source, name: name)
+  fee.update!(amount: amount, currency: "GHS", calculation_type: calculation_type, description: amount ? "Published rate; transaction-specific charges may also apply." : "Published range; view the current official fees page for the applicable amount.", effective_from: verified_at.to_date, active: true)
+end
+
+resources = [
+  ["View official Deed Registration guide", "service_information", "https://www.lc.gov.gh/services/deed-registration/", nil, nil, 10], ["View official Title Registration guide", "service_information", "https://www.lc.gov.gh/services/registration-title/", nil, nil, 10], ["Check application status", "tracking", "https://onlineservices.lc.gov.gh/vDW0_zcD", nil, nil, 20], ["View current fees and charges", "fee_reference", "https://www.lc.gov.gh/fees-charges/", nil, nil, 30], ["Make payment", "payment", "https://onlineservices.lc.gov.gh/tFSa_908", nil, nil, 40], ["Contact Lands Commission", "contact", "https://www.lc.gov.gh/contact-us/", "info@lc.gov.gh", "+233302429760", 50], ["Submit feedback or complaint", "complaint", "https://onlineservices.lc.gov.gh/pt886_oXS", "complaints@lc.gov.gh", "0505578100", 60]
+]
+[deed_service, title_service].each do |service|
+  resources.each do |name, type, url, email, phone, position|
+    next if service == deed_service && name == "View official Title Registration guide"
+    next if service == title_service && name == "View official Deed Registration guide"
+    source = curated_sources.values.find { |s| s.url == url }
+    resource = ActionResource.find_or_initialize_by(public_service: service, name: name)
+    resource.update!(institution: lands_commission, source: source, resource_type: type, purpose: "Official action resource", url: url, email: email, phone: phone, instructions: (type == "tracking" ? "Use the Lands Commission Job Number. CivicRoute does not submit or scrape this tracker." : nil), position: position, last_verified_at: verified_at, active: true)
+  end
+end
+
+chunks = [
+  [deed_service, curated_sources[:charter], "Published turnaround — Deed Registration", "The Lands Commission Client Service Charter publishes a service duration of 10 working days for Deed Registration under the Land Registration Division. CivicRoute treats this as a published service target, not an automatically inferred statutory deadline."],
+  [deed_service, curated_sources[:charter], "Published journey — Deed Registration", "The Client Service Charter lists submission of the stamped and plotted document and payment of the service bill as the published public steps for Deed Registration. CivicRoute does not treat these as live internal workflow stages."],
+  [deed_service, curated_sources[:deed_guide], "Instrument requirements — Deed Registration", "The official Deed Registration guide requires the instrument to identify its date and nature, the parties and witnesses with their signatures, include the solicitor's stamp or seal, an approved plan, required survey approvals, and supporting or recited documents. The site-plan owner name, land size and location must correspond with the instrument."],
+  [deed_service, curated_sources[:deed_guide], "Conditional requirements — Deed Registration", "The official guide identifies requirements that depend on the transaction, including planning comments for Stool Land, a jurat where applicable, and evidence of ground-rent payment where the transaction is not a first registration. The guide also lists a Ghana Revenue Authority Tax Clearance Certificate."],
+  [deed_service, curated_sources[:deed_notice], "Acknowledgement slip — Deed Registration", "A Lands Commission deed-registration notice states that an acknowledgement slip does not itself mean that the deed has been registered. Priority follows the order of presentation."],
+  [title_service, curated_sources[:charter], "Published turnaround — First Registration of Title", "The Lands Commission Client Service Charter publishes a service duration of 65 working days for First Registration of Title to Land. CivicRoute must not apply this target to every type of title transaction."],
+  [title_service, curated_sources[:charter], "Published journey — Application and payment", "The published First Registration journey begins with obtaining and completing the appropriate registration forms, submitting land documents to the Client Service Access Unit for vetting, paying the service bill, and submitting the completed form, documents and evidence of payment."],
+  [title_service, curated_sources[:charter], "Published journey — Verification to certificate", "The Client Service Charter lists records verification, application vetting with site inspection where necessary, title-plan preparation, newspaper publication with an objection period, preparation and issuance of the Land Certificate, and plotting of the certificate."],
+  [title_service, curated_sources[:charter], "Statutory objection period", "The published First Registration journey includes publication in the daily newspapers followed by a statutory 14-day period for objections. This step is part of the overall 65-working-day published service duration; CivicRoute must not add another 14 days."],
+  [title_service, curated_sources[:title_guide], "Instrument requirements — Title Registration", "The official Registration (Title) guide requires a stamped instrument, date and nature of instrument, party and witness details and signatures, solicitor's stamp or seal, an approved plan, required survey signatures, and supporting or recited documents. Site-plan ownership, land size and location must correspond with the instrument."],
+  [title_service, curated_sources[:title_guide], "Conditional requirements — Title Registration", "Depending on the transaction, official guidance may require planning approval, concurrence or consent, an existing Land Certificate, corporate-establishment documents, a stamped Power of Attorney, and notarization where a Power of Attorney was executed outside Ghana."],
+  [nil, sources.fetch(:status_portal), "Official application tracker", "Lands Commission provides an online Check Application Status facility where a citizen can search using a Job Number. CivicRoute does not scrape this portal and relies only on information the citizen records from it."],
+  [nil, sources.fetch(:complaints), "Official feedback and complaints channel", "Lands Commission provides an online Feedback & Complaints form requesting contact details, purpose, subject, description, region, related service and reference number."]
+]
+chunks.each_with_index do |(service, source, section, content), index|
+  next unless service
+  chunk = SourceChunk.find_or_initialize_by(public_service: service, source: source, section_label: section)
+  chunk.update!(content: content, position: index + 1, active: true)
 end
 
 tracking_steps = official_search.process_steps.active

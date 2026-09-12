@@ -49,7 +49,7 @@ module CaseAssessment
     def build_rule
       rule = ServiceRules::Resolver.call(
         public_service: case_record.public_service,
-        rule_type: :expected_duration_days,
+        rule_type: (case_record.public_service.slug.in?(%w[deed-registration registration-of-title]) ? :service_charter_turnaround : :expected_duration_days),
         on: case_record.application_completed_on
       )
 
@@ -115,6 +115,8 @@ module CaseAssessment
         anchor_date.advance(months: rule.duration_value)
       elsif unit.include?("week")
         anchor_date + rule.duration_value.weeks
+      elsif unit.include?("working")
+        BusinessDayCalculator.advance(anchor_date, rule.duration_value)
       else
         anchor_date + rule.duration_value.days
       end

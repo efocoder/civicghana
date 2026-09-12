@@ -1,5 +1,6 @@
 class ServiceRule < ApplicationRecord
   enum :rule_type, {
+    service_charter_turnaround: "service_charter_turnaround",
     expected_duration_days: "expected_duration_days",
     requires_payment_date: "requires_payment_date",
     complaint_available: "complaint_available",

@@ -5,6 +5,10 @@ class ActionResource < ApplicationRecord
   belongs_to :public_service, optional: true
 
   enum :resource_type, {
+    service_information: "service_information",
+    tracking: "tracking",
+    fee_reference: "fee_reference",
+    payment: "payment",
     contact: "contact",
     complaint: "complaint",
     rti: "rti",
