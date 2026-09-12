@@ -2,6 +2,9 @@ class Institution < ApplicationRecord
   include CatalogTranslatable
   belongs_to :country
   has_many :public_services, dependent: :restrict_with_error
+  has_many :organizational_units, dependent: :restrict_with_error
+
+  scope :active, -> { where(active: true) }
 
   alias_attribute :official_url, :website_url
 

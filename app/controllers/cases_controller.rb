@@ -1,8 +1,8 @@
 class CasesController < ApplicationController
   def new
     @case = Case.new
-    services = PublicService.includes(:catalog_translations, process_steps: :catalog_translations, institution: [:catalog_translations, :country])
-      .where(active: true, case_enabled: true)
+    services = PublicService.includes(:catalog_translations, process_steps: :catalog_translations, institution: [ :catalog_translations, :country ])
+      .where(active: true, case_enabled: true, support_level: "trackable")
     @public_service = params[:service_slug].present? ? services.find_by!(slug: params[:service_slug]) : services.order(:name).first!
     @tracking_steps = @public_service.process_steps.active
     @regions = @public_service.institution.country.regions.active.order(:name)
@@ -11,7 +11,7 @@ class CasesController < ApplicationController
 
   def create
     @case = Case.new(case_params)
-    @public_service = PublicService.find_by(id: case_params[:public_service_id], active: true)
+    @public_service = PublicService.find_by(id: case_params[:public_service_id], active: true, case_enabled: true, support_level: "trackable")
     unless @public_service
       @case.errors.add(:public_service, "must be a valid active service")
       @tracking_steps = []
@@ -75,6 +75,7 @@ class CasesController < ApplicationController
       evidence_comparison: @evidence_comparison,
       information_need: params[:need]
     )
+    @selected_need = params[:need].presence
     @existing_actions = @case.case_actions.includes(:action_resource).order(:created_at)
   end
 

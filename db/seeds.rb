@@ -78,16 +78,57 @@ lands_commission.update!({
   active: true
 })
 
+units = [
+  ["GENERAL", "General Services"],
+  ["SMD", "Survey & Mapping Division"],
+  ["LVD", "Land Valuation Division"],
+  ["PVLMD", "Public & Vested Lands Management Division"],
+  ["LRD", "Land Registration Division"]
+].each_with_index.to_h do |(code, name), position|
+  unit = OrganizationalUnit.find_or_initialize_by(institution: lands_commission, code: code)
+  unit.update!(name: name, description: "Lands Commission organizational unit.", position: position + 1, active: true)
+  [code, unit]
+end
+
 official_search = PublicService.find_or_initialize_by(slug: "official-consolidated-search")
 official_search.update!({
   institution: lands_commission,
+  organizational_unit: units.fetch("GENERAL"),
   name: "Official / Consolidated Search",
   description: "Check registered land information through the Lands Commission's official search service and understand the published timeframe for receiving a result.",
   service_category: "land_services",
   service_code: "LC-OFFICIAL-SEARCH",
+  support_level: :trackable,
   case_enabled: true,
+  tracks_portal_milestones: true,
+  requires_region: true,
   active: true
 })
+
+[
+  ["registration-of-title", "Registration of Title", "LC-TITLE-REG", "LRD", "Registration of land title through the Lands Commission."],
+  ["deed-registration", "Deed Registration", "LC-DEED-REG", "LRD", "Registration of a deed through the Lands Commission."],
+  ["plan-approval", "Plan Approval", "LC-PLAN-APPROVAL", "SMD", "Plan approval service provided by the Survey & Mapping Division."],
+  ["stamping-guidance", "Stamping / Stamp-Duty Guidance", "LC-STAMPING", "LVD", "Official service information relating to valuation and stamp-duty processes."]
+].each do |slug, name, code, unit_code, description|
+  service = PublicService.find_or_initialize_by(slug: slug)
+  service.update!(
+    institution: lands_commission,
+    organizational_unit: units.fetch(unit_code),
+    name: name,
+    description: description,
+    service_category: "land_services",
+    service_code: code,
+    support_level: :directory,
+    case_enabled: false,
+    tracks_portal_milestones: false,
+    requires_region: false,
+    active: true
+  )
+  ensure_catalog_translation(service, attributes: { name: service.name, description: service.description }) if defined?(ensure_catalog_translation)
+  link = ServiceSource.find_or_initialize_by(public_service: service, source: sources.fetch(:lands_contact))
+  link.update!(purpose: "Official Lands Commission service information", primary: true)
+end
 
 def ensure_catalog_translation(record, locale: "en", attributes: {})
   translation = record.catalog_translations.find_or_initialize_by(locale: locale)
@@ -96,6 +137,10 @@ end
 
 ensure_catalog_translation(lands_commission, attributes: { name: lands_commission.name, description: lands_commission.description })
 ensure_catalog_translation(official_search, attributes: { name: official_search.name, description: official_search.description })
+
+# The catalogue entries above remain directory-only until authoritative,
+# service-specific requirements or fees have been curated. Seeds deliberately
+# avoid turning broad institutional descriptions into invented guidance.
 
 CivicRoute::REGIONS.each do |name|
   Region.find_or_create_by!(country: ghana, code: name.parameterize, name: name) { |r| r.active = true }
@@ -144,7 +189,7 @@ duration_rule.update!({
   source: sources.fetch(:land_act),
   value: 14,
   unit: "days after payment",
-  name: "Official search result timeframe",
+  name: "Official search result",
   description: "Published duration for issuing an official search result after the prescribed fees are paid.",
   verified_at: verified_at,
   active: true,

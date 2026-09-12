@@ -24,23 +24,29 @@
 
   <body class="min-h-screen bg-base-200 text-base-content">
     <header class="border-b border-base-300 bg-base-100" role="banner">
-      <div class="navbar mx-auto max-w-6xl px-4 sm:px-6">
+      <div class="navbar relative mx-auto max-w-6xl px-4 sm:px-6" data-controller="mobile-nav">
         <div class="flex-1">
           <%= link_to root_path, class: "text-lg font-bold tracking-tight text-primary" do %>
             CivicRoute <span class="text-base-content">Ghana</span>
+            <span class="sr-only">— Trust, understand, act</span>
           <% end %>
         </div>
-        <div class="flex items-center gap-3">
-          <nav aria-label="Language" class="flex items-center gap-2 text-sm">
+        <button type="button" class="btn btn-ghost btn-sm sm:hidden" data-mobile-nav-target="button" data-action="mobile-nav#toggle" aria-controls="public-navigation" aria-expanded="false">
+          <span class="sr-only">Open navigation</span><span aria-hidden="true" class="text-xl">☰</span>
+        </button>
+        <nav id="public-navigation" data-mobile-nav-target="panel" class="hidden absolute left-0 right-0 top-16 z-20 border-b border-base-300 bg-base-100 p-4 shadow-lg sm:static sm:flex sm:items-center sm:gap-5 sm:border-0 sm:p-0 sm:shadow-none" aria-label="Primary navigation">
+          <%= link_to "Services", root_path, class: "block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-base-200" %>
+          <%= link_to "How CivicRoute works", root_path(anchor: "how-it-works"), class: "block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-base-200" %>
+          <div class="mt-2 flex items-center gap-2 border-t border-base-300 pt-3 sm:mt-0 sm:border-0 sm:pt-0">
             <label for="locale-select" class="sr-only">Language</label>
             <select id="locale-select" class="select select-bordered select-sm" onchange="if (this.value) window.location.href = this.value">
               <% { en: "English", tw: "Twi", fr: "Français", ee: "Eʋegbe" }.each do |locale, name| %>
                 <option value="<%= url_for(locale: locale) %>" <%= "selected" if I18n.locale == locale %>><%= name %></option>
               <% end %>
             </select>
-          </nav>
-          <div class="badge badge-outline badge-sm sm:badge-md"><%= t("civicroute.independent_tool") %></div>
-        </div>
+          </div>
+        </nav>
+        <div class="hidden items-center gap-3 sm:flex"><div class="badge badge-outline badge-sm"><%= t("civicroute.independent_tool") %></div></div>
       </div>
     </header>
 

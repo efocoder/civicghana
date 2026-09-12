@@ -1,5 +1,19 @@
 <h1 class="text-3xl font-bold mb-6">AI diagnostics</h1>
 <p class="mb-4 text-base-content/70">Most recent in-process request. Credentials and prompt text are never recorded.</p>
+<h2 class="text-xl font-bold mb-3">AI Providers</h2>
+<div class="overflow-x-auto bg-base-100 rounded-box mb-6">
+  <table class="table">
+    <thead><tr><th>Provider</th><th>Configuration</th><th>Model</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <th><%= @provider.display_name %></th>
+        <td><%= @provider.configured? ? "OK" : "Missing configuration" %></td>
+        <td><%= @provider.model.presence || "Missing" %></td>
+        <td><%= @provider.available? ? "Available" : (@provider.enabled? ? "Unavailable" : "Disabled") %></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 <div class="overflow-x-auto bg-base-100 rounded-box">
   <table class="table">
     <tbody>

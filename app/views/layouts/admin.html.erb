@@ -11,7 +11,7 @@
   <body class="bg-base-200 text-base-content">
     <header class="navbar bg-neutral text-neutral-content px-6"><%= link_to "CivicRoute Admin", admin_root_path, class: "text-xl font-bold" %></header>
     <nav class="flex flex-wrap gap-2 bg-base-100 p-4">
-      <% { agencies: "Agencies", public_services: "Services", process_steps: "Steps", status_options: "Statuses", service_rules: "Rules", sources: "Sources", service_sources: "Service Sources", action_resources: "Resources", source_chunks: "Chunks" }.each do |route, label| %>
+      <% { agencies: "Agencies", organizational_units: "Units", public_services: "Services", service_variants: "Variants", requirements: "Requirements", service_fees: "Fees", process_steps: "Steps", status_options: "Statuses", service_rules: "Rules", sources: "Sources", service_sources: "Service Sources", action_resources: "Resources", source_chunks: "Chunks" }.each do |route, label| %>
         <%= link_to label, public_send("admin_#{route}_path"), class: "btn btn-sm btn-ghost" %>
       <% end %>
       <%= link_to "AI diagnostics", admin_ai_diagnostics_path, class: "btn btn-sm btn-ghost" %>

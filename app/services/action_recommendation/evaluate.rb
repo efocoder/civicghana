@@ -38,6 +38,40 @@ module ActionRecommendation
     ActionSuggestion = Data.define(:action_type, :explanation_code, :reasons, :action_resource)
 
     def determine_primary_action
+      if @information_need == :service_problem
+        resource = find_resource(:complaint)
+        if resource
+          return ActionSuggestion.new(
+            action_type: :complaint,
+            explanation_code: :service_problem_requested,
+            reasons: [ "You asked for help resolving a service problem.", "A formal complaint can document the issue through the configured official channel." ],
+            action_resource: resource
+          )
+        end
+      end
+
+      if @information_need == :status_update
+        if timeframe_exceeded? && !has_clarification?
+          resource = find_resource(:contact)
+          return ActionSuggestion.new(
+            action_type: :clarification,
+            explanation_code: :status_update_requested,
+            reasons: [
+              "You asked for a clearer status or update.",
+              "A written clarification can help establish the current public status."
+            ],
+            action_resource: resource
+          )
+        end
+
+        return ActionSuggestion.new(
+          action_type: :monitor,
+          explanation_code: :status_update_requested,
+          reasons: [ "You asked for a clearer status or update. Continue monitoring the verified public milestones for changes." ],
+          action_resource: nil
+        )
+      end
+
       if within_timeframe?
         return ActionSuggestion.new(
           action_type: :monitor,

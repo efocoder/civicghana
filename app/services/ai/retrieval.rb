@@ -4,14 +4,15 @@ module Ai
 
     def self.call(...) = new(...).call
 
-    def initialize(query:, service: nil, limit: 5)
+    def initialize(query:, service: nil, source: nil, limit: 5)
       @query = query
       @service = service
+      @source = source
       @limit = limit
     end
 
     def call
-      chunks = SourceChunk.relevant_chunks(query: query, service: service, limit: limit)
+      chunks = SourceChunk.relevant_chunks(query: query, service: service, source: source, limit: limit)
       sources = chunks.map(&:source).uniq
       context_text = build_context(chunks)
 
@@ -20,7 +21,7 @@ module Ai
 
     private
 
-    attr_reader :query, :service, :limit
+    attr_reader :query, :service, :source, :limit
 
     def build_context(chunks)
       chunks.map do |chunk|

@@ -3,3 +3,44 @@
 @source not "./daisyui{,*}.mjs";
 
 @plugin "./daisyui.mjs";
+
+/* CivicRoute's public visual language: calm civic blue, warm paper, readable type. */
+:root {
+  --civic-ink: #172235;
+  --civic-blue: #24527a;
+  --civic-blue-dark: #173b5b;
+  --civic-paper: #f7f8fa;
+  --civic-line: #d9e0e8;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--civic-paper);
+  color: var(--civic-ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 3px solid #e1a93b;
+  outline-offset: 3px;
+}
+
+.civic-container { width: min(100% - 2rem, 72rem); margin-inline: auto; }
+.civic-eyebrow { color: var(--civic-blue); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.civic-section-title { color: var(--civic-ink); font-size: clamp(1.35rem, 2vw, 1.8rem); font-weight: 750; letter-spacing: -.02em; }
+.civic-surface { background: white; border: 1px solid var(--civic-line); border-radius: .85rem; box-shadow: 0 8px 24px rgb(23 34 53 / 5%); }
+.civic-link { color: var(--civic-blue); text-underline-offset: .2em; }
+.civic-link:hover { color: var(--civic-blue-dark); }
+
+@media (max-width: 639px) {
+  .civic-container { width: min(100% - 1.25rem, 72rem); }
+  .btn { min-height: 2.75rem; }
+  .input, .select, textarea { min-height: 2.75rem; font-size: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

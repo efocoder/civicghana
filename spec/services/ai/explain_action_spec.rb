@@ -17,7 +17,10 @@ RSpec.describe Ai::ExplainAction do
 
   describe ".call" do
     it "returns explanation with sources" do
-      allow(Ai::Client).to receive(:generate).and_return("A follow-up is recommended because the timeframe has passed.")
+      allow(Ai::Client).to receive(:generate).and_return(
+        Ai::Response.new(content: "A follow-up is recommended because the timeframe has passed.",
+          provider: "mimo", model: "test", input_tokens: 1, output_tokens: 1, raw_request_id: "test")
+      )
 
       result = described_class.call(
         action_recommendation: action_recommendation,

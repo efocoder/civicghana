@@ -46,7 +46,10 @@ RSpec.describe "Lands Commission release gate", type: :system do
     expect(page).to have_content("Land Act, 2020")
 
     allow(Ai::Client).to receive(:generate).and_return(
-      "The verified source says the official search result is due within fourteen days after payment (Land Act, 2020 (Act 1036), Section 222)."
+      Ai::Response.new(
+        content: "The verified source says the official search result is due within fourteen days after payment (Land Act, 2020 (Act 1036), Section 222).",
+        provider: "mimo", model: "test", input_tokens: 1, output_tokens: 1, raw_request_id: "test"
+      )
     )
     page.driver.submit :post, ask_assistant_path, {
       service_slug: service.slug,

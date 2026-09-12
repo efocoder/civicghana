@@ -15,10 +15,14 @@
 
 <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
   <section>
-    <div class="mb-8">
+    <div class="mb-8" id="service-overview">
       <p class="mb-2 font-semibold text-primary"><%= @public_service.institution.country.name %> · <%= @public_service.institution.translated_name %></p>
       <h1 class="text-3xl font-bold tracking-tight sm:text-5xl"><%= @public_service.translated_name %></h1>
       <p class="mt-4 max-w-3xl text-lg leading-8 text-base-content/75"><%= @public_service.translated_description %></p>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <span class="badge badge-outline"><%= @public_service.support_level.humanize %> support</span>
+        <% if @public_service.organizational_unit %><span class="badge badge-ghost"><%= @public_service.organizational_unit.name %></span><% end %>
+      </div>
     </div>
 
     <% if @duration_rule %>
@@ -28,7 +32,7 @@
             <span class="badge badge-success gap-1">✓ Verified source</span>
             <span class="badge badge-ghost">Official fact</span>
           </div>
-          <h2 id="official-rule-title" class="card-title text-2xl">Official search result: <%= @duration_rule.value %> <%= @duration_rule.unit %></h2>
+          <h2 id="official-rule-title" class="card-title text-2xl"><%= @duration_rule.name.presence || "Published service timeframe" %>: <%= @duration_rule.value %> <%= @duration_rule.unit %></h2>
           <p class="leading-7"><%= @duration_rule.source.summary %></p>
 
           <div class="divider"></div>
@@ -61,8 +65,8 @@
               class: "btn btn-outline btn-success", target: "_blank", rel: "noopener noreferrer" %>
           </div>
 
-          <div class="mt-3" data-controller="ai" data-ai-url-value="<%= ask_assistant_path %>" data-ai-type-value="explain_rule">
-            <button data-action="click->ai#ask" data-ai-target="button" class="btn btn-ghost btn-sm gap-1" data-ai-question-param="Explain the official search duration rule in plain language.">
+          <div class="mt-3" data-controller="ai" data-ai-url-value="<%= explain_rule_assistant_path %>" data-ai-type-value="explain_rule">
+            <button data-action="click->ai#ask" data-ai-target="button" class="btn btn-ghost btn-sm gap-1" data-ai-question-param="Explain the official search duration rule in plain language." data-ai-service-param="<%= @public_service.slug %>">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
               Explain this rule simply
             </button>
@@ -80,12 +84,13 @@
           </div>
         </div>
       </article>
-    <% else %>
+    <% elsif @public_service.tracking_available? %>
       <div class="alert alert-warning" role="status">
         <span>No currently verified duration rule is available. CivicRoute will not display an unverified estimate.</span>
       </div>
     <% end %>
 
+    <% if @public_service.source_chunks.active_sources.exists? %>
     <div class="mt-8" data-controller="ai" data-ai-url-value="<%= ask_assistant_path %>" data-ai-type-value="qa">
       <div class="card border border-base-300 bg-base-100">
         <div class="card-body">
@@ -108,7 +113,38 @@
         </div>
       </div>
     </div>
+    <% end %>
 
+    <% if @public_service.requirements.active.any? %>
+      <section class="mt-8" aria-labelledby="requirements-title">
+        <h2 id="requirements-title" class="text-2xl font-bold">Requirements</h2>
+        <ul class="mt-4 space-y-3">
+          <% @public_service.requirements.active.ordered.each do |requirement| %>
+            <li class="rounded-box border border-base-300 bg-base-100 p-4">
+              <p class="font-semibold"><%= requirement.title %><%= " (required)" if requirement.mandatory? %></p>
+              <% if requirement.description.present? %><p class="text-sm text-base-content/70"><%= requirement.description %></p><% end %>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+
+    <% if @public_service.service_fees.active.any? %>
+      <section class="mt-8" aria-labelledby="fees-title">
+        <h2 id="fees-title" class="text-2xl font-bold">Verified fees</h2>
+        <div class="mt-4 space-y-3">
+          <% @public_service.service_fees.active.ordered.each do |fee| %>
+            <article class="rounded-box border border-base-300 bg-base-100 p-4">
+              <p class="font-semibold"><%= fee.name %></p>
+              <p class="text-sm text-base-content/70"><%= fee.amount ? number_to_currency(fee.amount, unit: "#{fee.currency} ") : "See the authoritative source for the current amount." %></p>
+              <%= link_to "Verify fee source", fee.source.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %>
+            </article>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @public_service.process_steps.active.any? %>
     <section class="mt-8" aria-labelledby="public-steps-title">
       <h2 id="public-steps-title" class="text-2xl font-bold">Published public journey</h2>
       <p class="mt-2 text-base-content/70">These steps explain the public process; they do not claim to show the institution's internal workflow.</p>
@@ -124,6 +160,7 @@
         <% end %>
       </ol>
     </section>
+    <% end %>
 
     <section class="mt-8" aria-labelledby="sources-title">
       <h2 id="sources-title" class="text-2xl font-bold">Verified sources</h2>
@@ -158,12 +195,13 @@
   <aside>
     <div class="card sticky top-6 border border-base-300 bg-base-100 shadow-sm">
       <div class="card-body">
-        <h2 class="card-title">Ready to check your case?</h2>
-        <p class="text-sm leading-6 text-base-content/70">Compare what you can currently see about your application with the verified public-service information available in CivicRoute.</p>
-        <% if @public_service.case_enabled? %>
+        <% if @public_service.tracking_available? %>
+          <h2 class="card-title">Ready to check your case?</h2>
+          <p class="text-sm leading-6 text-base-content/70">Compare what you can currently see about your application with the verified public-service information available in CivicRoute.</p>
           <%= link_to "Start checking my case", new_case_path(service_slug: @public_service.slug), class: "btn btn-primary" %>
         <% else %>
-          <p class="alert alert-info text-sm">Case assessment is not enabled for this service.</p>
+          <h2 class="card-title">Service support</h2>
+          <p class="alert alert-info text-sm">This service currently provides <%= @public_service.support_level %> information. Case assessment is not enabled.</p>
         <% end %>
         <p class="text-xs text-base-content/60">CivicRoute does not access the institution's internal systems. You remain in control of the information you provide.</p>
       </div>

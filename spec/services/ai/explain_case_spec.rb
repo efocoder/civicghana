@@ -51,7 +51,10 @@ RSpec.describe Ai::ExplainCase do
 
   describe ".call" do
     it "returns AI explanation with sources" do
-      allow(Ai::Client).to receive(:generate).and_return("Your case is 31 days overdue.")
+      allow(Ai::Client).to receive(:generate).and_return(
+        Ai::Response.new(content: "Your case is 31 days overdue.", provider: "mimo", model: "test",
+          input_tokens: 1, output_tokens: 1, raw_request_id: "test")
+      )
 
       result = described_class.call(
         case_record: kase,

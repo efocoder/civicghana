@@ -19,7 +19,10 @@ RSpec.describe Ai::AnswerQuestion do
     end
 
     it "returns grounded answer when sources found" do
-      allow(Ai::Client).to receive(:generate).and_return("The search takes 14 days.")
+      allow(Ai::Client).to receive(:generate).and_return(
+        Ai::Response.new(content: "The search takes 14 days.", provider: "mimo", model: "test",
+          input_tokens: 1, output_tokens: 1, raw_request_id: "test")
+      )
 
       result = described_class.call(question: "official search fourteen days payment", service: service)
 

@@ -1,14 +1,15 @@
 module Ai
   class RefineDraft
-    Result = Data.define(:refined_text, :valid)
+    Result = Data.define(:refined_text, :valid, :provider_failed)
 
     TONES = %w[clearer shorter more_formal polite plain_language].freeze
 
     def self.call(...) = new(...).call
 
-    def initialize(draft_text:, tone: "clearer")
+    def initialize(draft_text:, tone: "clearer", provider: Ai::ProviderRegistry.default_name)
       @draft_text = draft_text.to_s.strip
       @tone = tone.to_s
+      @provider = provider
     end
 
     def call
@@ -21,28 +22,33 @@ module Ai
         tone: tone_label
       )
 
-      refined = Ai::Client.generate(
+      response = Ai::Client.generate(
+        provider: provider,
+        task: :draft_refinement,
         system_prompt: system_prompt,
         user_prompt: user_prompt
       )
 
       validation = Ai::ResponseValidator.call(
-        response: refined,
+        response: response.content,
         known_dates: extract_dates(draft_text),
         known_urls: extract_urls(draft_text)
       )
 
       Result.new(
-        refined_text: validation.valid ? refined : draft_text,
-        valid: validation.valid
+        refined_text: validation.valid ? response.content : draft_text,
+        valid: validation.valid,
+        provider_failed: false
       )
-    rescue Ai::Client::Error, Ai::Client::TimeoutError, Ai::Client::ProviderError
-      fallback("AI refinement is temporarily unavailable. The original draft is shown below.")
+    rescue Ai::Client::ConfigurationError
+      fallback("CivicRoute Assistant is currently unavailable. Your verified service information and case assessment are still available.", provider_failed: true)
+    rescue Ai::Client::Error
+      fallback("#{Ai::ProviderRegistry.fetch(provider).display_name} is temporarily unavailable. The original draft is shown below.", provider_failed: true)
     end
 
     private
 
-    attr_reader :draft_text, :tone
+    attr_reader :draft_text, :tone, :provider
 
     def tone_label
       case tone
@@ -63,8 +69,8 @@ module Ai
       text.scan(%r{https?://[^\s"')]+})
     end
 
-    def fallback(message)
-      Result.new(refined_text: message, valid: true)
+    def fallback(message, provider_failed: false)
+      Result.new(refined_text: message, valid: true, provider_failed: provider_failed)
     end
   end
 end

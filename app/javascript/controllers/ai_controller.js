@@ -22,9 +22,10 @@ export default class extends Controller {
     }
 
     const serviceInput = form?.querySelector("input[name='service_slug']")
+    const serviceSlug = serviceInput?.value || event.target.dataset.aiServiceParam
     await this.execute(this.urlValue, {
       question: question,
-      ...(serviceInput ? { service_slug: serviceInput.value } : {})
+      ...(serviceSlug ? { service_slug: serviceSlug } : {})
     })
   }
 
@@ -59,6 +60,7 @@ export default class extends Controller {
   }
 
   async execute(url, body) {
+    this.lastRequest = { url, body }
     this.setLoading(true)
     this.hideError()
     this.hideResponse()
@@ -104,9 +106,14 @@ export default class extends Controller {
     }
   }
 
+  async retry(event) {
+    event.preventDefault()
+    if (this.lastRequest) await this.execute(this.lastRequest.url, this.lastRequest.body)
+  }
+
   showAnswer(answer, sources, valid) {
     if (this.hasAnswerTarget) {
-      this.answerTarget.textContent = answer
+      this.answerTarget.innerHTML = this.formatAiText(answer)
     }
 
     if (this.hasSourcesTarget && sources.length > 0) {
@@ -129,7 +136,7 @@ export default class extends Controller {
   showRefinedDraft(refinedText, valid) {
     const draftBody = document.getElementById("draft-body")
     if (draftBody) {
-      draftBody.value = refinedText
+      draftBody.value = refinedText.replace(/\*\*/g, "")
     }
 
     if (this.hasResponseTarget) {
@@ -170,5 +177,19 @@ export default class extends Controller {
     const div = document.createElement("div")
     div.textContent = text
     return div.innerHTML
+  }
+
+  formatAiText(text) {
+    // Citations are rendered from CivicRoute's verified source cards below;
+    // remove provider-generated inline source labels from the prose so they
+    // are not duplicated or presented as provider-authored links.
+    // Providers sometimes append citations such as "*(Source: ...))*".
+    // CivicRoute renders authoritative citations as source cards, so remove
+    // the entire provider-generated source line (including nested brackets).
+    const withoutInlineSources = (text || "").replace(/(?:\*+\s*)?\(?\s*Source:\s*[^\n]*(?:\n|$)/gi, "")
+    const escaped = this.escapeHtml(withoutInlineSources)
+    return escaped
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br>")
   }
 }

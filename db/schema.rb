@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_12_120700) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_12_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -107,7 +107,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_120700) do
     t.date "payment_date"
     t.date "portal_created_on"
     t.uuid "public_service_id", null: false
-    t.string "region", null: false
+    t.string "region"
     t.datetime "updated_at", null: false
     t.index ["public_service_id"], name: "index_cases_on_public_service_id"
   end
@@ -162,6 +162,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_120700) do
     t.index ["slug"], name: "index_institutions_on_slug", unique: true
   end
 
+  create_table "organizational_units", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.uuid "institution_id", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["institution_id", "code"], name: "index_organizational_units_on_institution_id_and_code", unique: true
+    t.index ["institution_id", "position"], name: "index_organizational_units_on_institution_id_and_position"
+    t.index ["institution_id"], name: "index_organizational_units_on_institution_id"
+  end
+
   create_table "portal_statuses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "code", null: false
@@ -207,14 +221,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_120700) do
     t.text "description", null: false
     t.uuid "institution_id", null: false
     t.string "name", null: false
+    t.uuid "organizational_unit_id"
+    t.boolean "requires_region", default: false, null: false
     t.string "service_category", null: false
     t.string "service_code"
     t.string "slug", null: false
+    t.string "support_level", default: "directory", null: false
+    t.boolean "tracks_portal_milestones", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["institution_id", "name"], name: "index_public_services_on_institution_id_and_name", unique: true
     t.index ["institution_id"], name: "index_public_services_on_institution_id"
+    t.index ["organizational_unit_id"], name: "index_public_services_on_organizational_unit_id"
     t.index ["service_code"], name: "index_public_services_on_service_code", unique: true
     t.index ["slug"], name: "index_public_services_on_slug", unique: true
+    t.index ["support_level", "active"], name: "index_public_services_on_support_level_and_active"
+    t.check_constraint "support_level::text = ANY (ARRAY['directory'::character varying, 'guided'::character varying, 'trackable'::character varying]::text[])", name: "public_services_valid_support_level"
   end
 
   create_table "regions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -226,6 +247,46 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_120700) do
     t.datetime "updated_at", null: false
     t.index ["country_id", "code"], name: "index_regions_on_country_id_and_code", unique: true
     t.index ["country_id"], name: "index_regions_on_country_id"
+  end
+
+  create_table "requirements", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "category", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.boolean "mandatory", default: true, null: false
+    t.integer "position", default: 0, null: false
+    t.uuid "public_service_id", null: false
+    t.uuid "service_variant_id"
+    t.uuid "source_id"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["public_service_id", "service_variant_id", "position"], name: "index_requirements_for_service"
+    t.index ["public_service_id"], name: "index_requirements_on_public_service_id"
+    t.index ["service_variant_id"], name: "index_requirements_on_service_variant_id"
+    t.index ["source_id"], name: "index_requirements_on_source_id"
+  end
+
+  create_table "service_fees", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.decimal "amount", precision: 14, scale: 2
+    t.string "calculation_type", default: "fixed", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "GHS", null: false
+    t.text "description"
+    t.date "effective_from"
+    t.date "effective_to"
+    t.string "name", null: false
+    t.uuid "public_service_id", null: false
+    t.uuid "service_variant_id"
+    t.uuid "source_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["public_service_id", "active"], name: "index_service_fees_on_public_service_id_and_active"
+    t.index ["public_service_id"], name: "index_service_fees_on_public_service_id"
+    t.index ["service_variant_id"], name: "index_service_fees_on_service_variant_id"
+    t.index ["source_id"], name: "index_service_fees_on_source_id"
+    t.check_constraint "amount IS NULL OR amount >= 0::numeric", name: "service_fees_nonnegative_amount"
+    t.check_constraint "effective_to IS NULL OR effective_from IS NULL OR effective_to >= effective_from", name: "service_fees_valid_effective_period"
   end
 
   create_table "service_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -260,6 +321,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_120700) do
     t.index ["public_service_id", "source_id"], name: "index_service_sources_on_public_service_id_and_source_id", unique: true
     t.index ["public_service_id"], name: "index_service_sources_on_public_service_id"
     t.index ["source_id"], name: "index_service_sources_on_source_id"
+  end
+
+  create_table "service_variants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.uuid "public_service_id", null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["public_service_id", "position"], name: "index_service_variants_on_public_service_id_and_position"
+    t.index ["public_service_id", "slug"], name: "index_service_variants_on_public_service_id_and_slug", unique: true
+    t.index ["public_service_id"], name: "index_service_variants_on_public_service_id"
   end
 
   create_table "source_chunks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -318,15 +393,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_120700) do
   add_foreign_key "case_observations", "process_steps", column: "reported_process_step_id"
   add_foreign_key "cases", "public_services"
   add_foreign_key "institutions", "countries"
+  add_foreign_key "organizational_units", "institutions"
   add_foreign_key "portal_statuses", "public_services"
   add_foreign_key "process_steps", "public_services"
   add_foreign_key "process_steps", "sources"
   add_foreign_key "public_services", "institutions"
+  add_foreign_key "public_services", "organizational_units"
   add_foreign_key "regions", "countries"
+  add_foreign_key "requirements", "public_services"
+  add_foreign_key "requirements", "service_variants"
+  add_foreign_key "requirements", "sources"
+  add_foreign_key "service_fees", "public_services"
+  add_foreign_key "service_fees", "service_variants"
+  add_foreign_key "service_fees", "sources"
   add_foreign_key "service_rules", "public_services"
   add_foreign_key "service_rules", "sources"
   add_foreign_key "service_sources", "public_services"
   add_foreign_key "service_sources", "sources"
+  add_foreign_key "service_variants", "public_services"
   add_foreign_key "source_chunks", "public_services"
   add_foreign_key "source_chunks", "sources"
 end

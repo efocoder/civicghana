@@ -33,7 +33,9 @@ services:
       TEST_DB_NAME: civicroute_test
       BINDING: 0.0.0.0
       PORT: 3000
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      MIMO_API_KEY: ${MIMO_API_KEY:-}
+      MIMO_MODEL: ${MIMO_MODEL:-mimo-v2.5}
+      MIMO_BASE_URL: ${MIMO_BASE_URL:-https://api.xiaomimimo.com/v1}
     depends_on:
       db:
         condition: service_healthy

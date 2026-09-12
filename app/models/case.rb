@@ -3,7 +3,7 @@ class Case < ApplicationRecord
   has_many :case_observations, dependent: :destroy
   has_many :case_actions, dependent: :destroy
 
-  validates :region, presence: true
+  validates :region, presence: true, if: -> { public_service&.requires_region? }
   validate :region_is_configured_for_service
   validates :application_completed_on, presence: true
   validate :application_completed_on_not_in_future
@@ -35,7 +35,7 @@ class Case < ApplicationRecord
   end
 
   def region_is_configured_for_service
-    return if region.blank? || public_service.blank?
+    return if region.blank? || public_service.blank? || !public_service.requires_region?
 
     regions = public_service.institution.country.regions.active
     return if regions.none? # Factories may intentionally omit country catalog data.

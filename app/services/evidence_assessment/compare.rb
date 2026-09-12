@@ -70,7 +70,7 @@ module EvidenceAssessment
         comparison_observation: previous,
         explanation_code: :identical_snapshots,
         portal_changed: false,
-        supporting_evidence: [current, previous]
+        supporting_evidence: [ current, previous ]
       )
     end
 
@@ -81,7 +81,7 @@ module EvidenceAssessment
         comparison_observation: non_portal,
         explanation_code: :portal_unchanged_after_later_update,
         portal_changed: false,
-        supporting_evidence: [previous_portal, non_portal, portal]
+        supporting_evidence: [ previous_portal, non_portal, portal ]
       )
     end
 
@@ -109,7 +109,7 @@ module EvidenceAssessment
         comparison_observation: non_portal,
         explanation_code: :evidence_agrees,
         portal_changed: nil,
-        supporting_evidence: [portal, non_portal]
+        supporting_evidence: [ portal, non_portal ]
       )
     end
 
@@ -120,7 +120,7 @@ module EvidenceAssessment
         comparison_observation: non_portal,
         explanation_code: :later_progress_than_portal,
         portal_changed: nil,
-        supporting_evidence: [portal, non_portal]
+        supporting_evidence: [ portal, non_portal ]
       )
     end
 
@@ -131,13 +131,13 @@ module EvidenceAssessment
         comparison_observation: non_portal,
         explanation_code: :cannot_compare_structurally,
         portal_changed: nil,
-        supporting_evidence: [portal, non_portal]
+        supporting_evidence: [ portal, non_portal ]
       )
     end
 
     def portal_snapshots_identical?(obs1, obs2)
-      statuses1 = obs1.case_milestone_observations.includes(:process_step).map { |m| [m.process_step.name, m.status] }.sort
-      statuses2 = obs2.case_milestone_observations.includes(:process_step).map { |m| [m.process_step.name, m.status] }.sort
+      statuses1 = obs1.case_milestone_observations.includes(:process_step).map { |m| [ m.process_step.name, m.status ] }.sort
+      statuses2 = obs2.case_milestone_observations.includes(:process_step).map { |m| [ m.process_step.name, m.status ] }.sort
       statuses1 == statuses2
     end
 
@@ -147,12 +147,14 @@ module EvidenceAssessment
 
     def portal_progress_position(observation)
       milestones = observation.case_milestone_observations.includes(:process_step)
+      allowed_step_ids = @case_record.public_service.process_steps.active.ids.to_set
+      milestones = milestones.select { |milestone| allowed_step_ids.include?(milestone.process_step_id) }
       status_options = @case_record.public_service.portal_statuses.active.index_by { |option| option.name }
       ranked = milestones.filter_map do |milestone|
         option = status_options[milestone.status] || status_options.values.find { |candidate| candidate.code == milestone.status }
         next unless option
 
-        [milestone.process_step.position, option.position]
+        [ milestone.process_step.position, option.position ]
       end
       return 0 if ranked.empty?
 
@@ -163,7 +165,7 @@ module EvidenceAssessment
     def claimed_progress_position(observation)
       case observation.progress_claim
       when "public_milestone"
-        observation.reported_process_step&.sequence
+        observation.reported_process_step&.position
       when "near_completion"
         999
       when "completed"

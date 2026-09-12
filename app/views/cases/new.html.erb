@@ -90,6 +90,7 @@
           </label>
         </div>
 
+        <% if @public_service.requires_region? %>
         <div class="form-control">
           <%= f.label :region, "Region *", class: "label" %>
           <%= f.select :region,
@@ -103,6 +104,7 @@
             </label>
           <% end %>
         </div>
+        <% end %>
       </div>
     </div>
 

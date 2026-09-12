@@ -107,7 +107,7 @@ LLM Provider (provider-neutral abstraction)
 - **Database**: PostgreSQL 17
 - **Frontend**: Hotwire (Turbo + Stimulus), DaisyUI + Tailwind CSS
 - **Asset Pipeline**: Propshaft, Importmap
-- **AI**: ruby-openai (provider-neutral), PostgreSQL full-text search
+- **AI**: Xiaomi MiMo (server-side adapter), PostgreSQL full-text search
 - **Containerization**: Docker Compose (Podman)
 - **Testing**: RSpec, FactoryBot, Shoulda-Matchers, Capybara
 
@@ -205,8 +205,9 @@ podman compose exec web bundle exec rspec
 ```text
 DATABASE_URL          — PostgreSQL connection string
 RAILS_MASTER_KEY      — Rails encrypted credentials key
-OPENAI_API_KEY        — OpenAI API key (optional, for AI features)
-OPENAI_MODEL          — Model name (default: gpt-4o-mini)
+MIMO_API_KEY          — Xiaomi MiMo API key (server-side, for AI features)
+MIMO_MODEL            — MiMo model name (default: mimo-v2.5)
+MIMO_BASE_URL         — MiMo API base URL (default: https://api.xiaomimimo.com/v1)
 AI_MAX_TOKENS         — Max tokens per AI response (default: 1000)
 AI_TIMEOUT            — AI request timeout in seconds (default: 30)
 APP_HOST              — Production hostname

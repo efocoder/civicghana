@@ -24,12 +24,17 @@ Rails.application.routes.draw do
 
   resource :assistant, only: [] do
     post :ask
+    post :explain_rule
   end
 
   namespace :admin do
     root "agencies#index"
     resources :agencies
+    resources :organizational_units
     resources :public_services
+    resources :service_variants
+    resources :requirements
+    resources :service_fees
     resources :process_steps
     resources :status_options
     resources :service_rules

@@ -13,16 +13,21 @@ class SourceChunk < ApplicationRecord
 
   scope :for_service, ->(service) { where(public_service: service) }
 
-  def self.relevant_chunks(query:, service: nil, limit: 5)
+  def self.relevant_chunks(query:, service: nil, source: nil, limit: 5)
     ranked_query = search_query(query)
     chunks = active_sources
+    chunks = chunks.where(source: source) if source
     if ranked_query.present?
       metadata_terms = query.to_s.scan(/[[:alnum:]]+/).select { |term| term.length >= 3 }.uniq.first(20)
-      metadata_sql = metadata_terms.map do |term|
-        escaped = ActiveRecord::Base.sanitize_sql_like(term)
-        "source_chunks.section_label ILIKE '%#{escaped}%' OR source_chunks.provision ILIKE '%#{escaped}%' OR sources.title ILIKE '%#{escaped}%'"
-      end.join(" OR ")
-      chunks = chunks.where("content_tsv @@ to_tsquery('english', ?) OR #{metadata_sql}", ranked_query)
+      text_matches = chunks.where("content_tsv @@ to_tsquery('english', ?)", ranked_query)
+      metadata_matches = metadata_terms.reduce(chunks.none) do |matches, term|
+        pattern = "%#{ActiveRecord::Base.sanitize_sql_like(term)}%"
+        matches.or(chunks.where(
+          "source_chunks.section_label ILIKE :pattern OR source_chunks.provision ILIKE :pattern OR sources.title ILIKE :pattern",
+          pattern: pattern
+        ))
+      end
+      chunks = text_matches.or(metadata_matches)
     else
       return []
     end
@@ -39,7 +44,7 @@ class SourceChunk < ApplicationRecord
     terms = query.to_s.downcase.scan(/[[:alnum:]]+/).uniq
       .reject { |term| term.length < 3 || SEARCH_STOPWORDS.include?(term) }
     candidates.select do |chunk|
-      searchable_text = [chunk.content, chunk.section_label, chunk.provision, chunk.source&.title].compact.join(" ").downcase
+      searchable_text = [ chunk.content, chunk.section_label, chunk.provision, chunk.source&.title ].compact.join(" ").downcase
       terms.any? { |term| searchable_text.include?(term) }
     end.first(limit)
   end

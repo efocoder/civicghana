@@ -15,7 +15,7 @@ RSpec.describe Ai::RefineDraft do
     end
 
     it "returns refined text on success" do
-      allow(Ai::Client).to receive(:generate).and_return("Refined draft text here.")
+      allow(Ai::Client).to receive(:generate).and_return(ai_response("Refined draft text here."))
 
       result = described_class.call(draft_text: "Original draft.", tone: "clearer")
 
@@ -24,7 +24,7 @@ RSpec.describe Ai::RefineDraft do
     end
 
     it "falls back to original when validation fails" do
-      allow(Ai::Client).to receive(:generate).and_return("New deadline is 15 March 2026.")
+      allow(Ai::Client).to receive(:generate).and_return(ai_response("New deadline is 15 March 2026."))
 
       result = described_class.call(draft_text: "Original deadline 10 August 2026.", tone: "clearer")
 
@@ -41,12 +41,17 @@ RSpec.describe Ai::RefineDraft do
     end
 
     it "accepts all valid tones" do
-      allow(Ai::Client).to receive(:generate).and_return("Refined.")
+      allow(Ai::Client).to receive(:generate).and_return(ai_response("Refined."))
 
       %w[clearer shorter more_formal polite plain_language].each do |tone|
         result = described_class.call(draft_text: "Draft.", tone: tone)
         expect(result.refined_text).to eq("Refined.")
       end
     end
+  end
+
+  def ai_response(content)
+    Ai::Response.new(content: content, provider: "mimo", model: "test",
+      input_tokens: 1, output_tokens: 1, raw_request_id: "test")
   end
 end

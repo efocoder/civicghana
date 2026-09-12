@@ -188,4 +188,26 @@ RSpec.describe ActionRecommendation::Evaluate do
       expect(chraj).to be_nil
     end
   end
+
+  describe "information need selections" do
+    it "prioritizes a complaint when a service problem is selected" do
+      rule = build_rule_result(:within_timeframe)
+      evidence = build_evidence_result(:no_comparison)
+
+      result = described_class.call(case_record: kase, rule_result: rule, evidence_comparison: evidence, information_need: :service_problem)
+
+      expect(result.action_type).to eq(:complaint)
+      expect(result.explanation_code).to eq(:service_problem_requested)
+    end
+
+    it "prioritizes a status clarification when an overdue update is selected" do
+      rule = build_rule_result(:timeframe_exceeded)
+      evidence = build_evidence_result(:no_comparison)
+
+      result = described_class.call(case_record: kase, rule_result: rule, evidence_comparison: evidence, information_need: :status_update)
+
+      expect(result.action_type).to eq(:clarification)
+      expect(result.explanation_code).to eq(:status_update_requested)
+    end
+  end
 end

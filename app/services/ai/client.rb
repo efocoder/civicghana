@@ -1,103 +1,56 @@
 module Ai
   class Client
-    class Error < StandardError; end
-    class ConfigurationError < Error; end
-    class TimeoutError < Error; end
-    class ProviderError < Error; end
+    Error = Ai::Providers::Base::Error
+    ConfigurationError = Ai::Providers::Base::ConfigurationError
+    TimeoutError = Ai::Providers::Base::TimeoutError
+    ProviderError = Ai::Providers::Base::RequestError
+    DisabledError = Ai::Providers::Base::DisabledError
 
-    def self.generate(system_prompt:, user_prompt:, context: nil)
-      new.generate(system_prompt: system_prompt, user_prompt: user_prompt, context: context)
+    def self.generate(provider: nil, system_prompt:, user_prompt:, context: nil, task: nil)
+      new.generate(provider: provider, system_prompt: system_prompt,
+        user_prompt: user_prompt, context: context, task: task)
     end
 
-    def generate(system_prompt:, user_prompt:, context: nil)
-      messages = build_messages(system_prompt, user_prompt, context)
-
-      response = with_retry { request(messages) }
-
-      extract_content(response)
-    rescue Faraday::TimeoutError, Faraday::ConnectionFailed => e
-      raise TimeoutError, "AI service timed out: #{e.message}"
-    rescue Faraday::TooManyRequestsError => e
-      # A provider-side 429 is not retryable here. Retrying immediately can
-      # amplify quota/rate-limit failures; surface the normal CivicRoute
-      # provider-failure fallback instead.
-      raise ProviderError, "AI provider rate limit: #{e.message}"
-    rescue OpenAI::Error => e
-      raise ProviderError, "AI provider error: #{e.message}"
+    def generate(provider: nil, system_prompt:, user_prompt:, context: nil, task: nil)
+      if provider.present? && provider.to_s != Ai::ProviderRegistry.default_name
+        raise Ai::ProviderRegistry::UnknownProvider, "Unknown AI provider"
+      end
+      adapter = Ai::ProviderRegistry.fetch
+      started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      response = adapter.generate(
+        messages: build_messages(system_prompt, user_prompt, context),
+        max_tokens: ENV.fetch("AI_MAX_TOKENS", "1000").to_i
+      )
+      log_result(response, task, started_at)
+      response
+    rescue Ai::Providers::Base::Error
+      log_failure(Ai::ProviderRegistry.default_name, task, started_at)
+      raise
     end
 
     private
 
-    def request(messages)
-      with_timeout do
-        client.chat(parameters: {
-          model: model_name,
-          messages: messages,
-          max_tokens: max_tokens,
-          temperature: 0.3
-        })
-      end
-    end
-
-    def with_retry
-      attempts = 0
-      begin
-        attempts += 1
-        yield
-      rescue Faraday::TimeoutError, Faraday::ConnectionFailed
-        retry if attempts < 2
-        raise
-      end
-    end
-
-    def client
-      @client ||= OpenAI::Client.new(
-        access_token: api_key,
-        request_timeout: timeout
-      )
-    end
-
     def build_messages(system_prompt, user_prompt, context)
-      messages = [ { role: "system", content: system_prompt } ]
-
-      if context.present?
-        messages << { role: "system", content: "Verified CivicRoute context:\n\n#{context}" }
-      end
-
-      messages << { role: "user", content: user_prompt }
-      messages
+      system_content = system_prompt.dup
+      system_content << "\n\nVerified CivicRoute context:\n\n#{context}" if context.present?
+      [ { role: "system", content: system_content }, { role: "user", content: user_prompt } ]
     end
 
-    def extract_content(response)
-      content = response.dig("choices", 0, "message", "content")&.strip
-      raise ProviderError, "AI provider returned an empty response" if content.blank?
-
-      content
+    def log_result(response, task, started_at)
+      Rails.logger.info({ event: "ai_request", provider: response.provider,
+        model: response.model, task_type: task, success: true, duration_ms: elapsed_ms(started_at),
+        input_tokens: response.input_tokens, output_tokens: response.output_tokens }.to_json)
     end
 
-    def with_timeout(&block)
-      Timeout.timeout(timeout, &block)
+    def log_failure(provider, task, started_at)
+      Rails.logger.warn({ event: "ai_request", provider: provider,
+        task_type: task, success: false, duration_ms: elapsed_ms(started_at) }.to_json)
     end
 
-    def api_key
-      environment_key = ENV.fetch("OPENAI_API_KEY")
-      environment_key.presence || Rails.application.credentials.dig(:openai, :api_key).presence ||
-        raise(ConfigurationError, "AI provider is not configured")
-    rescue KeyError
-      Rails.application.credentials.dig(:openai, :api_key).presence ||
-        raise(ConfigurationError, "AI provider is not configured")
-    end
+    def elapsed_ms(started_at)
+      return nil unless started_at
 
-    def model_name
-      ENV.fetch("OPENAI_MODEL", "gpt-4o-mini")
-    end
-
-    def max_tokens
-      ENV.fetch("AI_MAX_TOKENS", "1000").to_i
-    end
-
-    def timeout
-      ENV.fetch("AI_TIMEOUT", "30").to_i
+      ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).round
     end
   end
 end
