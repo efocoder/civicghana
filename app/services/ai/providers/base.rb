@@ -1,3 +1,5 @@
+require "faraday"
+
 module Ai
   module Providers
     class Base
@@ -27,7 +29,7 @@ module Ai
       def timeout = ENV.fetch("AI_TIMEOUT", "30").to_i
 
       def connection(base_url)
-        Faraday.new(url: base_url) do |faraday|
+        ::Faraday.new(url: base_url) do |faraday|
           faraday.request :json
           faraday.response :json
           faraday.options.timeout = timeout
@@ -42,9 +44,9 @@ module Ai
 
       def translate_errors
         yield
-      rescue Faraday::TimeoutError, Faraday::ConnectionFailed => error
+      rescue ::Faraday::TimeoutError, ::Faraday::ConnectionFailed => error
         raise TimeoutError, error.message
-      rescue Faraday::Error => error
+      rescue ::Faraday::Error => error
         raise RequestError, error.message
       end
     end

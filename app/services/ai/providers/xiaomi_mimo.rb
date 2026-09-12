@@ -20,7 +20,7 @@ module Ai
           end
           raise RequestError, provider_error(response) unless response.success?
 
-          body = response.body
+          body = response.body.is_a?(String) ? JSON.parse(response.body) : response.body
           content = body.dig("choices", 0, "message", "content")
           raise RequestError, "Xiaomi MiMo returned an empty response" if content.blank?
 
@@ -30,6 +30,8 @@ module Ai
             output_tokens: body.dig("usage", "completion_tokens"),
             raw_request_id: response.headers["x-request-id"].presence || body["id"])
         end
+      rescue JSON::ParserError => error
+        raise RequestError, "Xiaomi MiMo returned invalid JSON: #{error.message}"
       end
 
       protected
@@ -43,7 +45,10 @@ module Ai
       def base_url = ENV.fetch("MIMO_BASE_URL", DEFAULT_BASE_URL)
 
       def provider_error(response)
-        response.body.dig("error", "message").presence || "Xiaomi MiMo request failed (#{response.status})"
+        body = response.body.is_a?(String) ? JSON.parse(response.body) : response.body
+        body.dig("error", "message").presence || "Xiaomi MiMo request failed (#{response.status})"
+      rescue JSON::ParserError
+        "Xiaomi MiMo request failed (#{response.status})"
       end
     end
   end

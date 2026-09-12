@@ -13,7 +13,7 @@
   <%= t("nav.back_to_service_guide") %>
 <% end %>
 
-<div class="mx-auto max-w-2xl">
+<div class="mx-auto w-full max-w-4xl min-w-0">
   <div class="mb-8">
     <p class="mb-2 font-semibold text-primary"><%= @public_service.institution.country.name %> &middot; <%= @public_service.institution.translated_name %></p>
     <h1 class="text-3xl font-bold tracking-tight sm:text-4xl"><%= t("case.check_application") %></h1>
@@ -28,23 +28,24 @@
   </div>
 
   <turbo-frame id="case-assessment-form">
-  <%= simple_form_for @case, class: "space-y-6", data: { turbo_frame: "_top" } do |f| %>
+  <%= simple_form_for @case, class: "case-form min-w-0 space-y-8 sm:space-y-10", data: { turbo_frame: "_top" } do |f| %>
     <%= f.hidden_field :public_service_id, value: @public_service.id %>
 
-    <div class="card border border-base-300 bg-base-100">
-      <div class="card-body space-y-6">
+    <div class="card mb-8 min-w-0 border border-base-300 bg-base-100">
+      <div class="card-body min-w-0 space-y-6">
         <h2 class="card-title text-xl">Service</h2>
         <div class="form-control">
-          <input type="text" value="<%= @public_service.translated_name %>" class="input input-bordered" disabled />
+          <input type="text" value="<%= @public_service.translated_name %>" class="input input-bordered w-full max-w-full" disabled />
         </div>
       </div>
     </div>
 
-    <div class="card border border-base-300 bg-base-100">
-      <div class="card-body space-y-6">
+    <div class="card mb-8 min-w-0 border border-base-300 bg-base-100">
+      <div class="card-body min-w-0 space-y-6">
         <h2 class="card-title text-xl"><%= t("case.application_details") %></h2>
 
-        <div class="form-control">
+        <div class="grid min-w-0 gap-6 md:grid-cols-2">
+        <div class="form-control min-w-0">
           <%= f.label :application_completed_on, t("case.completed_date"), class: "label" %>
           <%= f.date_field :application_completed_on,
             class: "input input-bordered w-full #{'input-error' if @case.errors[:application_completed_on].any?}",
@@ -60,7 +61,7 @@
           </label>
         </div>
 
-        <div class="form-control">
+        <div class="form-control min-w-0">
           <%= f.label :payment_date, "Payment date", class: "label" %>
           <%= f.date_field :payment_date,
             class: "input input-bordered w-full #{'input-error' if @case.errors[:payment_date].any?}",
@@ -75,7 +76,7 @@
           </label>
         </div>
 
-        <div class="form-control">
+        <div class="form-control min-w-0 <%= "md:col-span-2" unless @public_service.requires_region? %>">
           <%= f.label :portal_created_on, "Portal Date Created", class: "label" %>
           <%= f.date_field :portal_created_on,
             class: "input input-bordered w-full #{'input-error' if @case.errors[:portal_created_on].any?}",
@@ -91,7 +92,7 @@
         </div>
 
         <% if @public_service.requires_region? %>
-        <div class="form-control">
+        <div class="form-control min-w-0">
           <%= f.label :region, "Region *", class: "label" %>
           <%= f.select :region,
             options_from_collection_for_select(@regions, :name, :name, @case.region),
@@ -105,18 +106,20 @@
           <% end %>
         </div>
         <% end %>
+        </div>
       </div>
     </div>
 
-    <div class="card border border-base-300 bg-base-100">
-      <div class="card-body space-y-6">
+    <div class="card mb-8 min-w-0 border border-base-300 bg-base-100">
+      <div class="card-body min-w-0 space-y-6">
         <h2 class="card-title text-xl"><%= t("case.portal_question") %></h2>
         <p class="text-sm text-base-content/60"><%= t("case.portal_help") %></p>
 
+        <div class="grid min-w-0 gap-6 md:grid-cols-2">
         <% @tracking_steps.each do |step| %>
-          <div class="form-control">
+          <div class="form-control min-w-0">
             <label class="label">
-              <span class="label-text font-semibold"><%= step.translated_name %></span>
+              <span class="label-text break-words font-semibold"><%= step.translated_name %></span>
             </label>
             <select name="milestones[<%= step.id %>]"
               class="select select-bordered w-full">
@@ -131,8 +134,9 @@
             </select>
           </div>
         <% end %>
+        </div>
 
-        <div class="form-control">
+        <div class="form-control min-w-0">
           <label class="label">
             <span class="label-text font-semibold"><%= t("case.overall_status") %></span>
           </label>
@@ -147,8 +151,8 @@
       </div>
     </div>
 
-    <div class="card border border-base-300 bg-base-100">
-      <div class="card-body space-y-6">
+    <div class="card mb-8 min-w-0 border border-base-300 bg-base-100">
+      <div class="card-body min-w-0 space-y-6">
         <h2 class="card-title text-xl"><%= t("case.observation_question") %></h2>
 
         <div class="form-control">

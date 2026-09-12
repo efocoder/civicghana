@@ -18,7 +18,7 @@
           <% end %>
         </div>
       </div>
-      <div class="flex-shrink-0 w-full lg:w-80">
+      <div id="how-it-works" class="flex-shrink-0 w-full lg:w-80">
         <div class="card bg-base-200 border border-base-300">
           <div class="card-body p-5">
             <h3 class="card-title text-sm text-base-content/60 mb-3">How CivicRoute works</h3>
@@ -47,6 +47,7 @@
   </div>
 
   <h2 class="mb-6 text-sm font-semibold uppercase tracking-wider text-base-content/60"><%= t("homepage.available_services") %></h2>
+  <p class="-mt-4 mb-5 max-w-2xl text-base text-base-content/70">Each service shows the level of verified support CivicRoute can provide. Choose a service to see its sources and next steps.</p>
 
   <%= form_with url: root_path, method: :get, class: "mb-6 grid gap-3 rounded-box border border-base-300 bg-base-100 p-4 md:grid-cols-4" do |form| %>
     <%= form.search_field :q, value: params[:q], placeholder: "Search services", class: "input input-bordered" %>
@@ -63,7 +64,9 @@
             <span class="badge badge-neutral"><%= service.institution.country.name %></span>
             <span class="text-base-content/60"><%= service.institution.translated_name %></span>
             <% if service.organizational_unit %><span class="badge badge-ghost"><%= service.organizational_unit.name %></span><% end %>
-            <span class="badge badge-outline"><%= service.support_level.humanize %></span>
+            <span class="badge badge-outline" title="CivicRoute support available for this service">
+              <%= { "directory" => "Information available", "guided" => "Verified guide available", "trackable" => "Application tracking supported" }.fetch(service.support_level.to_s, "Information available") %>
+            </span>
           </div>
           <div>
             <h3 class="card-title text-xl lg:text-2xl"><%= service.translated_name %></h3>
@@ -77,6 +80,13 @@
           </div>
         </div>
       </article>
+    <% end %>
+    <% if @public_services.empty? %>
+      <div class="civic-surface col-span-full p-8 text-center" role="status">
+        <h3 class="text-xl font-bold">No services available</h3>
+        <p class="mt-2 text-base-content/70">Try changing your search or filters.</p>
+        <%= link_to "Clear filters", root_path, class: "btn btn-outline btn-sm mt-4" %>
+      </div>
     <% end %>
   </div>
 </section>

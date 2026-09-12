@@ -14,40 +14,55 @@
   Back to assessment
 <% end %>
 
-<div class="mx-auto max-w-2xl">
-  <div class="mb-8">
+<div class="mx-auto w-full max-w-4xl min-w-0">
+  <div class="mb-8 max-w-2xl">
     <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Record an update</h1>
     <p class="mt-4 text-lg leading-8 text-base-content/75">
       Add information you received or observed after your previous case assessment.
     </p>
+    <p class="mt-3 text-base text-base-content/65">This creates a dated evidence record. CivicRoute uses it to compare institutional updates with what the public portal displays.</p>
   </div>
 
-  <%= simple_form_for @observation, url: case_observations_path(@case), scope: :case_observation, class: "space-y-6" do |f| %>
-    <div class="card border border-base-300 bg-base-100">
-      <div class="card-body space-y-6">
-        <h2 class="card-title text-xl">Where did this information come from?</h2>
+  <%= simple_form_for @observation, url: case_observations_path(@case), scope: :case_observation, class: "case-form min-w-0 space-y-8 sm:space-y-10", data: { controller: "evidence-form" } do |f| %>
+    <% if @observation.errors.any? %>
+      <div class="alert alert-error" role="alert" aria-live="assertive">
+        <div>
+          <h2 class="font-semibold">Please review this update</h2>
+          <ul class="mt-1 list-disc pl-5 text-sm">
+            <% @observation.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
+          </ul>
+        </div>
+      </div>
+    <% end %>
+    <div class="card mb-8 min-w-0 border border-base-300 bg-base-100">
+      <div class="card-body min-w-0 space-y-5">
+        <div><h2 class="card-title text-xl">Where did this information come from?</h2><p class="mt-1 text-base text-base-content/65">Choose the channel you used to receive or observe the update.</p></div>
 
-        <div class="form-control">
+        <fieldset class="form-control min-w-0">
+          <legend class="sr-only">Information source</legend>
+          <div class="grid gap-3 sm:grid-cols-2">
           <% CivicRoute::EVIDENCE_SOURCES.each do |key, label| %>
-            <label class="label cursor-pointer justify-start gap-3">
+            <label class="label min-w-0 cursor-pointer justify-start gap-3 rounded-lg border border-base-300 px-4 py-3 hover:bg-base-200">
               <%= f.radio_button :observation_type, key,
                 class: "radio radio-primary",
                 data: { action: "change->evidence-form#toggleFields" } %>
-              <span class="label-text"><%= label %></span>
+              <span class="label-text break-words"><%= label %></span>
             </label>
           <% end %>
+          </div>
           <% if @observation.errors[:observation_type].any? %>
             <label class="label">
               <span class="label-text-alt text-error"><%= @observation.errors[:observation_type].first %></span>
             </label>
           <% end %>
-        </div>
+        </fieldset>
       </div>
     </div>
 
-    <div class="card border border-base-300 bg-base-100">
-      <div class="card-body space-y-6">
+    <div class="card mb-8 min-w-0 border border-base-300 bg-base-100">
+      <div class="card-body min-w-0 space-y-5">
         <h2 class="card-title text-xl">When did you receive this information?</h2>
+        <p class="text-base text-base-content/65">Use the date you saw the portal status or received the institution’s update.</p>
 
         <div class="form-control">
           <%= f.label :observed_on, "Date received *", class: "label" %>
@@ -64,17 +79,19 @@
       </div>
     </div>
 
-    <div class="card border border-base-300 bg-base-100" id="non-portal-fields">
-      <div class="card-body space-y-6">
+    <div class="card mb-8 min-w-0 border border-base-300 bg-base-100" id="non-portal-fields">
+      <div class="card-body min-w-0 space-y-5">
         <h2 class="card-title text-xl">How was the application's progress described?</h2>
 
-        <div class="form-control">
+        <fieldset class="form-control min-w-0">
+          <legend class="sr-only">Progress described by the institution</legend>
+          <div class="grid gap-3 sm:grid-cols-2">
           <% CivicRoute::PROGRESS_CLAIMS.each do |key, label| %>
-            <label class="label cursor-pointer justify-start gap-3">
+            <label class="label min-w-0 cursor-pointer justify-start gap-3 rounded-lg border border-base-300 px-4 py-3 hover:bg-base-200">
               <%= f.radio_button :progress_claim, key,
                 class: "radio radio-primary",
                 data: { action: "change->evidence-form#toggleMilestoneField" } %>
-              <span class="label-text"><%= label %></span>
+              <span class="label-text break-words"><%= label %></span>
             </label>
           <% end %>
           <% if @observation.errors[:progress_claim].any? %>
@@ -82,7 +99,8 @@
               <span class="label-text-alt text-error"><%= @observation.errors[:progress_claim].first %></span>
             </label>
           <% end %>
-        </div>
+          </div>
+        </fieldset>
 
         <div class="form-control" id="milestone-select" style="display: none;">
           <%= f.label :reported_process_step_id, "Which milestone?", class: "label" %>
@@ -99,8 +117,8 @@
       </div>
     </div>
 
-    <div class="card border border-base-300 bg-base-100" id="summary-field">
-      <div class="card-body space-y-6">
+    <div class="card mb-8 min-w-0 border border-base-300 bg-base-100" id="summary-field">
+      <div class="card-body min-w-0 space-y-5">
         <h2 class="card-title text-xl">What were you told?</h2>
 
         <div class="alert alert-warning">
@@ -125,15 +143,16 @@
       </div>
     </div>
 
-    <div class="card border border-base-300 bg-base-100" id="portal-snapshot-fields" style="display: none;">
-      <div class="card-body space-y-6">
+    <div class="card mb-8 min-w-0 border border-base-300 bg-base-100" id="portal-snapshot-fields" style="display: none;">
+      <div class="card-body min-w-0 space-y-5">
         <h2 class="card-title text-xl">Portal tracking snapshot</h2>
         <p class="text-sm text-base-content/60">Record the status currently displayed for each tracking milestone.</p>
 
+        <div class="grid min-w-0 gap-6 md:grid-cols-2">
         <% @tracking_steps.each do |step| %>
-          <div class="form-control">
+          <div class="form-control min-w-0">
             <label class="label">
-              <span class="label-text font-semibold"><%= step.name %></span>
+              <span class="label-text break-words font-semibold"><%= step.name %></span>
             </label>
             <select name="milestones[<%= step.id %>]"
               class="select select-bordered w-full">
@@ -145,6 +164,7 @@
             </select>
           </div>
         <% end %>
+        </div>
 
         <div class="form-control">
           <label class="label">
@@ -158,42 +178,7 @@
     </div>
 
     <div class="card-actions justify-end">
-      <%= f.submit "Save evidence", class: "btn btn-primary btn-wide" %>
+      <%= f.submit "Save this update", class: "btn btn-primary btn-wide" %>
     </div>
   <% end %>
 </div>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const portalRadio = document.querySelector('input[name="case_observation[observation_type]"][value="portal"]');
-    const nonPortalFields = document.getElementById("non-portal-fields");
-    const summaryField = document.getElementById("summary-field");
-    const portalFields = document.getElementById("portal-snapshot-fields");
-    const milestoneSelect = document.getElementById("milestone-select");
-    const publicMilestoneRadio = document.querySelector('input[name="case_observation[progress_claim]"][value="public_milestone"]');
-
-    function toggleFields() {
-      const isPortal = portalRadio && portalRadio.checked;
-      if (nonPortalFields) nonPortalFields.style.display = isPortal ? "none" : "block";
-      if (summaryField) summaryField.style.display = isPortal ? "none" : "block";
-      if (portalFields) portalFields.style.display = isPortal ? "block" : "none";
-    }
-
-    function toggleMilestoneField() {
-      if (milestoneSelect && publicMilestoneRadio) {
-        milestoneSelect.style.display = publicMilestoneRadio.checked ? "block" : "none";
-      }
-    }
-
-    document.querySelectorAll('input[name="case_observation[observation_type]"]').forEach(function(radio) {
-      radio.addEventListener("change", toggleFields);
-    });
-
-    document.querySelectorAll('input[name="case_observation[progress_claim]"]').forEach(function(radio) {
-      radio.addEventListener("change", toggleMilestoneField);
-    });
-
-    toggleFields();
-    toggleMilestoneField();
-  });
-</script>

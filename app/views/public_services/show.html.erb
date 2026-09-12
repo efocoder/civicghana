@@ -20,7 +20,9 @@
       <h1 class="text-3xl font-bold tracking-tight sm:text-5xl"><%= @public_service.translated_name %></h1>
       <p class="mt-4 max-w-3xl text-lg leading-8 text-base-content/75"><%= @public_service.translated_description %></p>
       <div class="mt-3 flex flex-wrap gap-2">
-        <span class="badge badge-outline"><%= @public_service.support_level.humanize %> support</span>
+        <span class="badge badge-outline">
+          <%= { "directory" => "Information available", "guided" => "Verified guide available", "trackable" => "Application tracking supported" }.fetch(@public_service.support_level.to_s, "Information available") %>
+        </span>
         <% if @public_service.organizational_unit %><span class="badge badge-ghost"><%= @public_service.organizational_unit.name %></span><% end %>
       </div>
     </div>
@@ -96,10 +98,10 @@
         <div class="card-body">
           <h2 class="card-title text-lg">Ask about this service</h2>
           <p class="text-sm text-base-content/60 mb-3">Ask a question about <%= @public_service.translated_name %>. CivicRoute will answer using only verified sources.</p>
-          <form data-action="submit->ai#ask" class="flex gap-2">
+          <form data-action="submit->ai#ask" class="flex flex-col gap-2 sm:flex-row">
             <input type="hidden" name="service_slug" value="<%= @public_service.slug %>">
-            <input type="text" name="question" placeholder="Ask about the verified service information" class="input input-bordered input-sm flex-1" maxlength="500">
-            <button type="submit" data-ai-target="button" class="btn btn-primary btn-sm">Ask CivicRoute</button>
+            <input type="text" name="question" placeholder="Ask about the verified service information" class="input input-bordered flex-1" maxlength="500">
+            <button type="submit" data-ai-target="button" class="btn btn-primary w-full sm:w-auto">Ask CivicRoute</button>
           </form>
           <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm mt-2"></span>
           <div data-ai-target="error" class="hidden alert alert-warning mt-3 text-sm"></div>

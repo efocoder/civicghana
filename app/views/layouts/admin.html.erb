@@ -8,15 +8,15 @@
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   </head>
-  <body class="bg-base-200 text-base-content">
-    <header class="navbar bg-neutral text-neutral-content px-6"><%= link_to "CivicRoute Admin", admin_root_path, class: "text-xl font-bold" %></header>
-    <nav class="flex flex-wrap gap-2 bg-base-100 p-4">
+  <body class="min-h-screen bg-base-200 text-base-content">
+    <header class="navbar bg-neutral text-neutral-content px-4 sm:px-6"><%= link_to "CivicRoute Admin", admin_root_path, class: "text-lg font-bold" %></header>
+    <nav class="flex gap-2 overflow-x-auto border-b border-base-300 bg-base-100 p-3 sm:flex-wrap sm:p-4" aria-label="Admin navigation">
       <% { agencies: "Agencies", organizational_units: "Units", public_services: "Services", service_variants: "Variants", requirements: "Requirements", service_fees: "Fees", process_steps: "Steps", status_options: "Statuses", service_rules: "Rules", sources: "Sources", service_sources: "Service Sources", action_resources: "Resources", source_chunks: "Chunks" }.each do |route, label| %>
         <%= link_to label, public_send("admin_#{route}_path"), class: "btn btn-sm btn-ghost" %>
       <% end %>
       <%= link_to "AI diagnostics", admin_ai_diagnostics_path, class: "btn btn-sm btn-ghost" %>
     </nav>
-    <main class="mx-auto max-w-6xl p-6">
+    <main class="mx-auto w-full max-w-6xl p-4 sm:p-6">
       <% if notice %><div class="alert alert-success mb-4"><%= notice %></div><% end %>
       <%= yield %>
     </main>

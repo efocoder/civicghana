@@ -83,7 +83,14 @@ export default class extends Controller {
       }
 
       if (!response.ok) {
-        this.showError("Something went wrong. Please try again.")
+        let message = "AI explanation is temporarily unavailable. Your verified CivicRoute information is still available."
+        try {
+          const errorData = await response.json()
+          if (errorData.error) message = errorData.error
+        } catch (_) {
+          // Keep the safe, user-facing fallback when the server returns HTML.
+        }
+        this.showError(message)
         return
       }
 

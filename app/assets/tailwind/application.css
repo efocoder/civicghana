@@ -33,6 +33,10 @@ body {
 .civic-surface { background: white; border: 1px solid var(--civic-line); border-radius: .85rem; box-shadow: 0 8px 24px rgb(23 34 53 / 5%); }
 .civic-link { color: var(--civic-blue); text-underline-offset: .2em; }
 .civic-link:hover { color: var(--civic-blue-dark); }
+input, select, textarea { max-width: 100%; }
+input[type="date"] { min-width: 0; }
+.form-control .label { height: auto; min-height: 2rem; align-items: flex-start; flex-wrap: wrap; gap: .25rem; }
+.form-control .label-text-alt { display: block; width: 100%; white-space: normal; overflow-wrap: anywhere; word-break: normal; line-height: 1.5; }
 
 @media (max-width: 639px) {
   .civic-container { width: min(100% - 1.25rem, 72rem); }
