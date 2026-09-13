@@ -43,5 +43,4 @@ class Case < ApplicationRecord
 
     errors.add(:region, "must be a configured region for this agency")
   end
-
 end

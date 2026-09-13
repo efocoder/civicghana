@@ -13,5 +13,4 @@ RSpec.describe "AI provider adapters" do
     expect(result.content).to eq("MiMo answer")
     expect(result.provider).to eq("mimo")
   end
-
 end

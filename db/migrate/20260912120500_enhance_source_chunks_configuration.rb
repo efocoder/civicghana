@@ -6,6 +6,6 @@ class EnhanceSourceChunksConfiguration < ActiveRecord::Migration[8.1]
       t.jsonb :embedding
     end
 
-    add_index :source_chunks, [:public_service_id, :active, :position], name: "index_source_chunks_for_service"
+    add_index :source_chunks, [ :public_service_id, :active, :position ], name: "index_source_chunks_for_service"
   end
 end

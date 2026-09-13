@@ -48,10 +48,10 @@ module Admin
 
     def field_options(attribute)
       association = resource_class.reflect_on_association(attribute.to_s.delete_suffix("_id").to_sym)
-      return association.klass.order(:name).map { |record| [record.name, record.id] } if association
+      return association.klass.order(:name).map { |record| [ record.name, record.id ] } if association
 
       enum = resource_class.defined_enums[attribute.to_s]
-      enum&.keys&.map { |value| [value.humanize, value] }
+      enum&.keys&.map { |value| [ value.humanize, value ] }
     end
 
     def collection_path

@@ -9,7 +9,7 @@ Capybara.register_driver :cuprite do |app|
     app,
     browser_options: { "no-sandbox": nil },
     process_timeout: 15,
-    window_size: [1400, 1000]
+    window_size: [ 1400, 1000 ]
   )
 end
 

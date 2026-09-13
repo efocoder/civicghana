@@ -6,6 +6,6 @@ class EnhanceActionResourcesConfiguration < ActiveRecord::Migration[8.1]
       t.integer :position, null: false, default: 0
     end
 
-    add_index :action_resources, [:public_service_id, :resource_type, :position], name: "index_action_resources_for_service"
+    add_index :action_resources, [ :public_service_id, :resource_type, :position ], name: "index_action_resources_for_service"
   end
 end

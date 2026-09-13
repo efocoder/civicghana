@@ -15,6 +15,6 @@ class CreateCaseActions < ActiveRecord::Migration[8.1]
 
     add_index :case_actions, :action_type
     add_index :case_actions, :status
-    add_index :case_actions, [:case_id, :action_type]
+    add_index :case_actions, [ :case_id, :action_type ]
   end
 end

@@ -26,7 +26,7 @@ RSpec.describe "Cases", type: :request do
 
   describe "POST /cases" do
     let(:milestone_params) do
-      tracking_steps.to_h { |step| [step.id.to_s, "Pending"] }
+      tracking_steps.to_h { |step| [ step.id.to_s, "Pending" ] }
     end
 
     let(:valid_params) do

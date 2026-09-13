@@ -18,10 +18,10 @@ RSpec.describe "Admin configuration", type: :request do
   end
 
   it "renders every configuration collection for an authenticated admin" do
-    [admin_agencies_path, admin_organizational_units_path, admin_public_services_path,
+    [ admin_agencies_path, admin_organizational_units_path, admin_public_services_path,
       admin_service_variants_path, admin_requirements_path, admin_service_fees_path, admin_process_steps_path,
       admin_status_options_path, admin_service_rules_path, admin_sources_path,
-      admin_service_sources_path, admin_action_resources_path, admin_source_chunks_path].each do |path|
+      admin_service_sources_path, admin_action_resources_path, admin_source_chunks_path ].each do |path|
       get path, headers: headers
       expect(response).to have_http_status(:ok), "expected #{path} to render"
     end

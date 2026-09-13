@@ -70,7 +70,7 @@ RSpec.describe "Evidence recording", type: :request do
             observation_type: "portal",
             observed_on: "2026-09-10"
           },
-          milestones: tracking_steps.to_h { |s| [s.id.to_s, "Completed"] }
+          milestones: tracking_steps.to_h { |s| [ s.id.to_s, "Completed" ] }
         }
       }.to change(CaseObservation, :count).by(1)
         .and change(CaseMilestoneObservation, :count).by(4)

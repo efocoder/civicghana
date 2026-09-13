@@ -34,7 +34,7 @@ RSpec.describe "Lands Commission release gate", type: :system do
     }
     page.driver.submit :post, case_observations_path(kase), {
       case_observation: { observation_type: "portal", observed_on: "2026-09-10" },
-      milestones: service.process_steps.active.to_h { |step| [step.id.to_s, "Pending"] }
+      milestones: service.process_steps.active.to_h { |step| [ step.id.to_s, "Pending" ] }
     }
 
     visit case_path(kase)
