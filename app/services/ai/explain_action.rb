@@ -23,7 +23,7 @@ module Ai
         service: service,
         limit: 3
       )
-      return fallback("CivicRoute could not verify an answer from the currently approved sources.") if retrieval.chunks.empty?
+      return fallback("CivicRoute could not verify an answer from the currently approved sources.") if retrieval.sources.empty?
 
       response = Ai::Client.generate(
         provider: provider,

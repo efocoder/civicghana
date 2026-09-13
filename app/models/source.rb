@@ -26,6 +26,15 @@ class Source < ApplicationRecord
   validate :effective_period_is_valid
 
   scope :verified, -> { where(active: true).where.not(last_verified_at: nil) }
+  scope :requiring_review, -> { where(review_required: true).or(where(review_due_at: ..Time.current)) }
+
+  def verification_overdue?
+    review_due_at.present? && review_due_at <= Time.current
+  end
+
+  def url_unavailable?
+    last_checked_at.present? && (http_status.blank? || http_status >= 400)
+  end
 
   private
 

@@ -25,7 +25,7 @@ module Ai
         service: case_record.public_service,
         limit: 3
       )
-      return fallback("CivicRoute could not verify an answer from the currently approved sources.") if retrieval.chunks.empty?
+      return fallback("CivicRoute could not verify an answer from the currently approved sources.") if retrieval.sources.empty?
 
       system_prompt = Ai::PromptBuilder.system_prompt
       user_prompt = Ai::PromptBuilder.build_case_explanation_prompt(case_facts: case_facts)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_12_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_12_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -366,17 +366,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_160000) do
     t.datetime "created_at", null: false
     t.date "effective_from"
     t.date "effective_to"
+    t.integer "http_status"
     t.datetime "last_checked_at"
     t.datetime "last_verified_at", null: false
     t.string "provision"
     t.date "published_at"
     t.string "publisher", null: false
+    t.datetime "review_due_at"
+    t.boolean "review_required", default: false, null: false
     t.string "source_type", null: false
     t.text "summary", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.string "url", null: false
     t.index ["content_hash"], name: "index_sources_on_content_hash"
+    t.index ["review_due_at"], name: "index_sources_on_review_due_at"
+    t.index ["review_required"], name: "index_sources_on_review_required"
     t.index ["url"], name: "index_sources_on_url", unique: true
     t.check_constraint "effective_to IS NULL OR effective_from IS NULL OR effective_to >= effective_from", name: "sources_valid_effective_period"
   end

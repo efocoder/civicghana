@@ -3,13 +3,13 @@ class CaseObservationsController < ApplicationController
 
   def new
     @observation = @case.case_observations.build(observed_on: Date.current)
-    @tracking_steps = @case.public_service.process_steps.active
+    @tracking_steps = tracking_steps_for_case
     @portal_statuses = @case.public_service.portal_statuses.active
   end
 
   def create
     @observation = @case.case_observations.build(observation_params)
-    @tracking_steps = @case.public_service.process_steps.active
+    @tracking_steps = tracking_steps_for_case
     @portal_statuses = @case.public_service.portal_statuses.active
     milestones = submitted_milestones
 
@@ -18,7 +18,7 @@ class CaseObservationsController < ApplicationController
     end
 
     CaseObservation.transaction do
-      if @observation.portal? && milestones.empty?
+      if @observation.portal? && @case.public_service.tracks_portal_milestones? && milestones.empty?
         @observation.errors.add(:base, "at least one portal milestone status is required")
         raise ActiveRecord::Rollback
       end
@@ -57,5 +57,9 @@ class CaseObservationsController < ApplicationController
 
       [ step_id, status ]
     end
+  end
+
+  def tracking_steps_for_case
+    @case.public_service.tracks_portal_milestones? ? @case.public_service.process_steps.active : ProcessStep.none
   end
 end

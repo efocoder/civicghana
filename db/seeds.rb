@@ -73,6 +73,8 @@ sources = source_attributes.transform_values do |attributes|
   source.update!({
     **attributes,
     verified_at: verified_at,
+    review_due_at: verified_at + 6.months,
+    review_required: false,
     content_hash: Digest::SHA256.hexdigest(attributes.fetch(:summary)),
     active: true
   })
@@ -153,6 +155,19 @@ official_search.update!({
     "stamping-guidance" => "Informations officielles sur l'évaluation et les procédures de timbre."
   }
   ensure_catalog_translation(service, locale: "fr", attributes: { name: french_names.fetch(slug), description: french_descriptions.fetch(slug) })
+  twi_names = {
+    "registration-of-title" => "Asase Title a Wɔde Di Kan Kyerɛw Din",
+    "deed-registration" => "Deed Kyerɛw Din",
+    "plan-approval" => "Plan Ho Mpene",
+    "stamping-guidance" => "Stamp ne Stamp-Duty Akwankyerɛ"
+  }
+  twi_descriptions = {
+    "registration-of-title" => "Ghana Lands Commission asase title kyerɛw din adwuma.",
+    "deed-registration" => "Ghana Lands Commission deed kyerɛw din adwuma.",
+    "plan-approval" => "Survey ne Mapping Division plan ho mpene adwuma.",
+    "stamping-guidance" => "Aban akwankyerɛ a ɛfa valuation ne stamp-duty ho."
+  }
+  ensure_catalog_translation(service, locale: "tw", attributes: { name: twi_names.fetch(slug), description: twi_descriptions.fetch(slug) })
   link = ServiceSource.find_or_initialize_by(public_service: service, source: sources.fetch(:lands_contact))
   link.update!(purpose: "Official Lands Commission service information", primary: true)
 end
@@ -163,6 +178,7 @@ ensure_catalog_translation(official_search, attributes: { name: official_search.
 # Curated French labels for the catalogue's primary public entry points. Legal
 # source wording remains in its authoritative form.
 ensure_catalog_translation(lands_commission, locale: "fr", attributes: { name: "Commission des terres du Ghana" })
+ensure_catalog_translation(lands_commission, locale: "tw", attributes: { name: "Ghana Asase Boayikuo", description: "Aban adwumakuo a ɛhwɛ Ghana asase so." })
 units.each_value do |unit|
   french_name = {
     "General Services" => "Services généraux",
@@ -174,6 +190,7 @@ units.each_value do |unit|
   ensure_catalog_translation(unit, locale: "fr", attributes: { name: french_name })
 end
 ensure_catalog_translation(official_search, locale: "fr", attributes: { name: "Recherche officielle / consolidée", description: "Demandez une recherche officielle pour vérifier les informations enregistrées sur une parcelle." })
+ensure_catalog_translation(official_search, locale: "tw", attributes: { name: "Aban / Consolidated Search", description: "Fa Lands Commission official search hwɛ asase ho nsɛm a wɔakyerɛw na te bere a wɔatintim no ase." })
 
 # The catalogue entries above remain directory-only until authoritative,
 # service-specific requirements or fees have been curated. Seeds deliberately
@@ -206,6 +223,7 @@ end
   step = ProcessStep.find_or_initialize_by(public_service: official_search, position: position)
   step.update!({ name: name, description: description, source: source, active: false })
   ensure_catalog_translation(step, attributes: { name: step.name, description: step.description })
+  ensure_catalog_translation(step, locale: "tw", attributes: { name: { "Submit and pay" => "Mane na tua", "Track the public status" => "Hwɛ ɔmanfoɔ tebea", "Receive the search result" => "Nya search mmuaeɛ" }.fetch(step.name), description: step.description })
 end
 
 [
@@ -217,6 +235,7 @@ end
   step = ProcessStep.find_or_initialize_by(public_service: official_search, position: position + 3)
   step.update!({ name: name, description: description, source: source, active: true })
   ensure_catalog_translation(step, attributes: { name: step.name, description: step.description })
+  ensure_catalog_translation(step, locale: "tw", attributes: { name: { "Quality Control and Coordinate Entry" => "Quality Control ne Coordinate Entry", "Records Verification" => "Nkrataa mu nhwehwɛmu", "Report Preparation" => "Report siesie", "Vetting and Final Approval" => "Nhwehwɛmu ne Mpene a Etwa To" }.fetch(step.name), description: step.description })
 end
 
 duration_rule = ServiceRule.find_or_initialize_by(
@@ -423,7 +442,7 @@ curated_sources = {
 }
 curated_sources = curated_sources.each_with_object({}) do |(key, (title, url, summary)), memo|
   source = Source.find_or_initialize_by(url: url)
-  source.update!(publisher: "Ghana Lands Commission", title: title, url: url, source_type: "official_service", authority_level: "official", summary: summary, last_verified_at: verified_at, content_hash: Digest::SHA256.hexdigest(summary), active: true)
+  source.update!(publisher: "Ghana Lands Commission", title: title, url: url, source_type: "official_service", authority_level: "official", summary: summary, last_verified_at: verified_at, review_due_at: verified_at + 6.months, review_required: false, content_hash: Digest::SHA256.hexdigest(summary), active: true)
   memo[key] = source
 end
 

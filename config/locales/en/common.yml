@@ -5,6 +5,7 @@ en:
     not_affiliated: "CivicRoute is not affiliated with any government institution."
 
   nav:
+    skip_to_content: "Skip to main content"
     services: "Services"
     how_it_works: "How CivicRoute works"
     back_to_services: "All services"
@@ -18,6 +19,21 @@ en:
     subtitle: "Compare what the public portal shows with verified rules and updates you have received, then understand what you can do next."
     available_services: "Available services"
     view_guide: "View verified service guide"
+    step_verified_rule: "See the verified published rule"
+    step_compare: "Compare portal snapshots with updates"
+    step_discrepancy: "Detect possible discrepancies deterministically"
+    step_action: "Get a verified next action"
+    services_intro: "Each service shows the level of verified support CivicRoute can provide. Choose a service to see its sources and next steps."
+    search_services: "Search services"
+    all_agencies: "All agencies"
+    all_units: "All units"
+    filter: "Filter"
+    no_services: "No services available"
+    try_filters: "Try changing your search or filters."
+    support_levels:
+      directory: "Information available"
+      guided: "Verified guide available"
+      trackable: "Application assessment supported"
 
   service:
     requirements: "Requirements"
@@ -37,8 +53,14 @@ en:
     start_checking: "Start checking my case"
     privacy_note: "CivicRoute does not access the institution's internal systems. You remain in control of the information you provide."
     explain_rule: "Explain this rule simply"
+    verified_sources: "Verified sources"
+    official_resources: "Official action resources"
+    no_verified_rule: "No currently verified duration rule is available. CivicRoute will not display an unverified estimate."
+    translation_notice: "This translation or explanation is provided for accessibility. Refer to the authoritative source for the official wording."
+    working_days_estimate: "This date is an estimate that excludes Saturdays and Sundays only; Ghana public holidays are not yet included."
 
   case:
+    no_portal_milestones: "No service-specific portal milestones have been independently verified for this service. You can still assess the published timeframe without recording portal stages."
     new: "Check an application"
     application_assessment: "Application assessment"
     service: "Service"
@@ -55,6 +77,9 @@ en:
     completed_date: "Application completed date *"
     completed_help: "Enter the date you finished the application and submitted the required information and supporting documents."
     payment_help: "Payment and completion of the full application may happen on different dates. The verified published rule uses payment as its reference point."
+    payment_date: "Payment date"
+    portal_created_help: "This is the date labelled ‘Date Created’ on the service tracking page. It may be different from when you completed your application."
+    region_required: "Region *"
     select_region: "Select a region"
     portal_question: "What does the tracking portal currently show?"
     portal_help: "For each milestone below, open the ‘Select status’ menu and choose what the portal currently shows. Choose a status for at least one milestone so CivicRoute has a portal snapshot to assess and compare later."
@@ -185,3 +210,4 @@ en:
     copy_fallback: "Copy the browser address manually."
     saved_state: "Saved on this device"
     unavailable: "Saving is unavailable in this browser."
+    bearer_notice: "This private case link works like a key. Anyone who has it can open the case, so store and share it carefully."

@@ -10,7 +10,7 @@
 
 <%= link_to root_path, class: "btn btn-ghost btn-sm mb-4 gap-1" do %>
   <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-  All services
+  <%= t("nav.back_to_services") %>
 <% end %>
 <div class="mb-6" data-controller="saved-item" data-saved-item-type-value="service" data-saved-item-public-id-value="<%= @public_service.slug %>" data-saved-item-item-value="<%= { type: 'service', public_id: @public_service.slug, title: @public_service.translated_name, agency_name: @public_service.institution.translated_name, url: public_service_path(@public_service.slug) }.to_json %>" data-saved-item-save-label-value="<%= t('saved.save_service') %>" data-saved-item-saved-label-value="<%= t('saved.saved_state') %>" data-saved-item-remove-label-value="<%= t('saved.remove') %>" data-saved-item-unavailable-label-value="<%= t('saved.unavailable') %>">
   <button type="button" class="btn btn-outline btn-sm" data-saved-item-target="button" data-action="saved-item#toggle"><%= t("saved.save_service") %></button>
@@ -25,7 +25,7 @@
       <p class="mt-4 max-w-3xl text-lg leading-8 text-base-content/75"><%= @public_service.translated_description %></p>
       <div class="mt-3 flex flex-wrap gap-2">
         <span class="badge badge-outline">
-          <%= { "directory" => "Information available", "guided" => "Verified guide available", "trackable" => "Application tracking supported" }.fetch(@public_service.support_level.to_s, "Information available") %>
+          <%= t("homepage.support_levels.#{@public_service.support_level}") %>
         </span>
         <% if @public_service.organizational_unit %><span class="badge badge-ghost"><%= @public_service.organizational_unit.translated_name %></span><% end %>
       </div>
@@ -35,8 +35,8 @@
       <article class="card border border-success/30 bg-base-100 shadow-sm" aria-labelledby="official-rule-title">
         <div class="card-body">
           <div class="mb-2 flex flex-wrap items-center gap-2">
-            <span class="badge badge-success gap-1">✓ Verified source</span>
-            <span class="badge badge-ghost">Official fact</span>
+            <span class="badge badge-success gap-1">✓ <%= t("service.verified_source") %></span>
+            <span class="badge badge-ghost"><%= t("service.official_fact") %></span>
           </div>
           <h2 id="official-rule-title" class="card-title text-2xl"><%= @duration_rule.name.presence || "Published service timeframe" %>: <%= @duration_rule.value %> <%= @duration_rule.unit %></h2>
           <p class="leading-7"><%= @duration_rule.source.summary %></p>
@@ -45,26 +45,33 @@
 
           <dl class="grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt class="font-semibold">Source</dt>
+              <dt class="font-semibold"><%= t("service.source") %></dt>
               <dd class="mt-1 text-base-content/70"><%= @duration_rule.source.title %></dd>
             </div>
             <div>
-              <dt class="font-semibold">Provision</dt>
+              <dt class="font-semibold"><%= t("service.provision") %></dt>
               <dd class="mt-1 text-base-content/70"><%= @duration_rule.source.section_label %></dd>
             </div>
             <div>
-              <dt class="font-semibold">Publisher</dt>
+              <dt class="font-semibold"><%= t("service.publisher") %></dt>
               <dd class="mt-1 text-base-content/70"><%= @duration_rule.source.publisher %></dd>
             </div>
             <div>
-              <dt class="font-semibold">Effective from</dt>
+              <dt class="font-semibold"><%= t("service.effective_from") %></dt>
               <dd class="mt-1 text-base-content/70"><%= l(@duration_rule.effective_from, format: :long) %></dd>
             </div>
             <div>
-              <dt class="font-semibold">Last verified</dt>
+              <dt class="font-semibold"><%= t("service.last_verified") %></dt>
               <dd class="mt-1 text-base-content/70"><%= l(@duration_rule.verified_at.to_date, format: :long) %></dd>
             </div>
           </dl>
+
+          <% if @duration_rule.unit.to_s.include?("working") %>
+            <p class="alert alert-warning mt-4 text-sm" role="note"><%= t("service.working_days_estimate") %></p>
+          <% end %>
+          <% if I18n.locale != I18n.default_locale %>
+            <p class="alert alert-info mt-4 text-sm" role="note"><%= t("service.translation_notice") %></p>
+          <% end %>
 
           <div class="card-actions mt-3">
             <%= link_to t("service.read_source"), @duration_rule.source.url,
@@ -74,16 +81,16 @@
           <div class="mt-3" data-controller="ai" data-ai-url-value="<%= explain_rule_assistant_path %>" data-ai-type-value="explain_rule">
             <button data-action="click->ai#ask" data-ai-target="button" class="btn btn-ghost btn-sm gap-1" data-ai-question-param="Explain the official search duration rule in plain language." data-ai-service-param="<%= @public_service.slug %>">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
-              Explain this rule simply
+              <%= t("service.explain_rule") %>
             </button>
             <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm ml-2"></span>
             <div data-ai-target="error" class="hidden alert alert-warning mt-3 text-sm"></div>
             <div data-ai-target="response" class="hidden card border border-info/30 bg-base-100 mt-3">
               <div class="card-body">
-                <p class="text-xs text-base-content/40 mb-2">AI-generated explanation based on verified CivicRoute sources</p>
+                <p class="text-xs text-base-content/40 mb-2"><%= t("ai.ai_label") %></p>
                 <p data-ai-target="answer" class="text-sm text-base-content/80 whitespace-pre-wrap"></p>
                 <div data-ai-target="sources" class="mt-3 pt-3 border-t border-base-300">
-                  <p class="text-xs font-semibold text-base-content/50 mb-1">Verified sources used</p>
+                  <p class="text-xs font-semibold text-base-content/50 mb-1"><%= t("ai.sources_used") %></p>
                 </div>
               </div>
             </div>
@@ -92,25 +99,26 @@
       </article>
     <% elsif @public_service.tracking_available? %>
       <div class="alert alert-warning" role="status">
-        <span>No currently verified duration rule is available. CivicRoute will not display an unverified estimate.</span>
+        <span><%= t("service.no_verified_rule") %></span>
       </div>
     <% end %>
 
-    <% if @public_service.source_chunks.active_sources.exists? %>
+    <% if @public_service.sources.verified.exists? || @public_service.source_chunks.active_sources.exists? %>
     <div class="mt-8" data-controller="ai" data-ai-url-value="<%= ask_assistant_path %>" data-ai-type-value="qa">
       <div class="card border border-base-300 bg-base-100">
         <div class="card-body">
-          <h2 class="card-title text-lg">Ask about this service</h2>
+          <h2 class="card-title text-lg"><%= t("ai.ask_about_service") %></h2>
           <p class="text-sm text-base-content/60 mb-3">Ask a question about <%= @public_service.translated_name %>. CivicRoute will answer using only verified sources.</p>
           <form data-action="submit->ai#ask" class="flex flex-col gap-2 sm:flex-row">
             <input type="hidden" name="service_slug" value="<%= @public_service.slug %>">
-            <input type="text" name="question" placeholder="Ask about the verified service information" class="input input-bordered flex-1" maxlength="500">
+            <label for="service-question" class="sr-only"><%= t("ai.ask_about_service") %></label>
+            <input id="service-question" type="text" name="question" placeholder="<%= t('ai.ask_placeholder') %>" class="input input-bordered flex-1" maxlength="500" required>
             <button type="submit" data-ai-target="button" class="btn btn-primary w-full sm:w-auto"><%= t("ai.ask_button") %></button>
           </form>
           <span data-ai-target="loading" class="hidden loading loading-spinner loading-sm mt-2"></span>
           <div data-ai-target="error" class="hidden alert alert-warning mt-3 text-sm"></div>
           <div data-ai-target="response" class="hidden mt-3">
-            <p class="text-xs text-base-content/40 mb-2">AI-generated explanation based on verified CivicRoute sources</p>
+            <p class="text-xs text-base-content/40 mb-2"><%= t("ai.ai_label") %></p>
             <p data-ai-target="answer" class="text-sm text-base-content/80 whitespace-pre-wrap"></p>
             <div data-ai-target="sources" class="mt-3 pt-3 border-t border-base-300">
               <p class="text-xs font-semibold text-base-content/50 mb-1"><%= t("ai.sources_used") %></p>
@@ -129,6 +137,7 @@
             <li class="rounded-box border border-base-300 bg-base-100 p-4">
               <p class="font-semibold"><%= requirement.translated_title %><%= " (required)" if requirement.mandatory? %></p>
               <% if requirement.translated_description.present? %><p class="text-sm text-base-content/70"><%= requirement.translated_description %></p><% end %>
+              <%= render "source_provenance", source: requirement.source %>
             </li>
           <% end %>
         </ul>
@@ -143,7 +152,7 @@
             <article class="rounded-box border border-base-300 bg-base-100 p-4">
               <p class="font-semibold"><%= fee.translated_name %></p>
               <p class="text-sm text-base-content/70"><%= fee.amount ? number_to_currency(fee.amount, unit: "#{fee.currency} ") : "See the authoritative source for the current amount." %></p>
-              <%= link_to t("common.verify_fee_source"), fee.source.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %>
+              <%= render "source_provenance", source: fee.source %>
             </article>
           <% end %>
         </div>
@@ -152,8 +161,8 @@
 
     <% if @public_service.process_steps.active.any? %>
     <section class="mt-8" aria-labelledby="public-steps-title">
-      <h2 id="public-steps-title" class="text-2xl font-bold">Published public journey</h2>
-      <p class="mt-2 text-base-content/70">These steps explain the public process; they do not claim to show the institution's internal workflow.</p>
+      <h2 id="public-steps-title" class="text-2xl font-bold"><%= t("service.published_journey") %></h2>
+      <p class="mt-2 text-base-content/70"><%= t("service.journey_note") %></p>
       <ol class="mt-5 space-y-3">
         <% @public_service.process_steps.active.each do |step| %>
           <li class="flex gap-4 rounded-box border border-base-300 bg-base-100 p-4">
@@ -161,6 +170,7 @@
             <div>
               <h3 class="font-semibold"><%= step.translated_name %></h3>
               <p class="mt-1 text-sm leading-6 text-base-content/70"><%= step.translated_description %></p>
+              <%= render "source_provenance", source: step.source %>
             </div>
           </li>
         <% end %>
@@ -169,7 +179,7 @@
     <% end %>
 
     <section class="mt-8" aria-labelledby="sources-title">
-      <h2 id="sources-title" class="text-2xl font-bold">Verified sources</h2>
+      <h2 id="sources-title" class="text-2xl font-bold"><%= t("service.verified_sources") %></h2>
       <div class="mt-4 space-y-3">
         <% @public_service.service_sources.includes(:source).each do |link| %>
           <% source = link.source %>
@@ -184,13 +194,14 @@
 
     <% if @public_service.action_resources.active.verified.any? %>
       <section class="mt-8" aria-labelledby="resources-title">
-        <h2 id="resources-title" class="text-2xl font-bold">Official action resources</h2>
+        <h2 id="resources-title" class="text-2xl font-bold"><%= t("service.official_resources") %></h2>
         <div class="mt-4 space-y-3">
           <% @public_service.action_resources.active.verified.ordered.each do |resource| %>
             <article class="rounded-box border border-base-300 bg-base-100 p-4">
               <p class="font-semibold"><%= resource.translated_name %></p>
               <p class="text-sm text-base-content/70"><%= resource.translated_description %></p>
               <% if resource.url.present? %><%= link_to t("common.open_resource"), resource.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary text-sm" %><% end %>
+              <%= render "source_provenance", source: resource.source %>
             </article>
           <% end %>
         </div>
@@ -202,14 +213,14 @@
     <div class="card sticky top-6 border border-base-300 bg-base-100 shadow-sm">
       <div class="card-body">
         <% if @public_service.tracking_available? %>
-          <h2 class="card-title">Ready to check your case?</h2>
-          <p class="text-sm leading-6 text-base-content/70">Compare what you can currently see about your application with the verified public-service information available in CivicRoute.</p>
+          <h2 class="card-title"><%= t("service.ready_to_check") %></h2>
+          <p class="text-sm leading-6 text-base-content/70"><%= t("service.check_description") %></p>
           <%= link_to t("service.start_checking"), new_case_path(service_slug: @public_service.slug), class: "btn btn-primary" %>
         <% else %>
           <h2 class="card-title">Service support</h2>
           <p class="alert alert-info text-sm">This service currently provides <%= @public_service.support_level %> information. Case assessment is not enabled.</p>
         <% end %>
-        <p class="text-xs text-base-content/60">CivicRoute does not access the institution's internal systems. You remain in control of the information you provide.</p>
+        <p class="text-xs text-base-content/60"><%= t("service.privacy_note") %></p>
       </div>
     </div>
   </aside>

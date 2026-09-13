@@ -23,6 +23,7 @@
   </head>
 
   <body class="min-h-screen bg-base-200 text-base-content">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:btn focus:btn-primary"><%= t("nav.skip_to_content") %></a>
     <header class="border-b border-base-300 bg-base-100" role="banner">
       <div class="navbar relative mx-auto max-w-6xl px-4 sm:px-6" data-controller="mobile-nav">
         <div class="flex-1">
@@ -41,7 +42,7 @@
           <div class="mt-2 flex items-center gap-2 border-t border-base-300 pt-3 sm:mt-0 sm:border-0 sm:pt-0">
             <label for="locale-select" class="sr-only">Language</label>
             <select id="locale-select" class="select select-bordered select-sm" onchange="if (this.value) window.location.href = this.value">
-              <% { en: "English", fr: "Français" }.each do |locale, name| %>
+              <% { en: "English", tw: "Twi", fr: "Français" }.each do |locale, name| %>
                 <option value="<%= url_for(locale: locale) %>" <%= "selected" if I18n.locale == locale %>><%= name %></option>
               <% end %>
             </select>
@@ -53,7 +54,8 @@
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12" role="main">
+    <div id="offline-status" class="hidden alert alert-warning rounded-none" role="status" aria-live="polite"><span><%= t("offline.message") %></span></div>
+    <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12" role="main">
       <%= yield %>
     </main>
 
@@ -67,6 +69,12 @@
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("/service-worker.js").catch(function() {});
       }
+      function updateOfflineStatus() {
+        document.getElementById("offline-status")?.classList.toggle("hidden", navigator.onLine);
+      }
+      window.addEventListener("online", updateOfflineStatus);
+      window.addEventListener("offline", updateOfflineStatus);
+      document.addEventListener("turbo:load", updateOfflineStatus);
     </script>
   </body>
 </html>

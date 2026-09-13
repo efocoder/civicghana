@@ -4,11 +4,23 @@
 </div>
 <div class="overflow-x-auto bg-base-100 rounded-box">
   <table class="table">
-    <thead><tr><th>Name / identifier</th><th>Active</th><th></th></tr></thead>
+    <thead><tr><th>Name / identifier</th><% if resource_class == Source %><th>Services</th><th>Last verified</th><th>Last checked</th><th>HTTP</th><th>Review</th><% end %><th>Active</th><th></th></tr></thead>
     <tbody>
       <% @records.each do |record| %>
         <tr>
           <td><%= record.try(:name).presence || record.try(:title).presence || record.try(:section_label).presence || record.id %></td>
+          <% if resource_class == Source %>
+            <td><%= record.public_services.map(&:name).join(", ").presence || "—" %></td>
+            <td><%= record.last_verified_at ? l(record.last_verified_at.to_date, format: :long) : "Never" %></td>
+            <td><%= record.last_checked_at ? l(record.last_checked_at.to_date, format: :long) : "Never" %></td>
+            <td><%= record.http_status || "—" %></td>
+            <td>
+              <% if record.url_unavailable? %><span class="badge badge-error">URL unavailable</span><% end %>
+              <% if record.verification_overdue? %><span class="badge badge-warning">Verification overdue</span><% end %>
+              <% if record.review_required? %><span class="badge badge-warning">Review required</span><% end %>
+              <% unless record.url_unavailable? || record.verification_overdue? || record.review_required? %>Up to date<% end %>
+            </td>
+          <% end %>
           <td><%= record.respond_to?(:active) ? (record.active? ? "Yes" : "No") : "—" %></td>
           <td class="flex justify-end gap-2">
             <%= link_to "Edit", url_for(action: :edit, id: record), class: "btn btn-sm" %>

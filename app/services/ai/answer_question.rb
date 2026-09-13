@@ -18,7 +18,7 @@ module Ai
       return no_context_fallback unless service&.active?
 
       retrieval = Ai::Retrieval.call(query: retrieval_query || question, service: service, source: source, limit: 5)
-      if retrieval.chunks.empty?
+      if retrieval.sources.empty?
         record_diagnostic(retrieval, provider_called: false, provider_success: false, validation: "not_run")
         return no_context_fallback
       end

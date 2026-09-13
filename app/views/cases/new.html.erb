@@ -33,7 +33,7 @@
 
     <div class="card mb-8 min-w-0 border border-base-300 bg-base-100">
       <div class="card-body min-w-0 space-y-6">
-        <h2 class="card-title text-xl">Service</h2>
+        <h2 class="card-title text-xl"><%= t("case.service") %></h2>
         <div class="form-control">
           <input type="text" value="<%= @public_service.translated_name %>" class="input input-bordered w-full max-w-full" disabled />
         </div>
@@ -62,7 +62,7 @@
         </div>
 
         <div class="form-control min-w-0">
-          <%= f.label :payment_date, "Payment date", class: "label" %>
+          <%= f.label :payment_date, t("case.payment_date"), class: "label" %>
           <%= f.date_field :payment_date,
             class: "input input-bordered w-full #{'input-error' if @case.errors[:payment_date].any?}",
             max: Date.current.to_s %>
@@ -77,7 +77,7 @@
         </div>
 
         <div class="form-control min-w-0 <%= "md:col-span-2" unless @public_service.requires_region? %>">
-          <%= f.label :portal_created_on, "Portal Date Created", class: "label" %>
+          <%= f.label :portal_created_on, t("case.portal_date_created"), class: "label" %>
           <%= f.date_field :portal_created_on,
             class: "input input-bordered w-full #{'input-error' if @case.errors[:portal_created_on].any?}",
             max: Date.current.to_s %>
@@ -87,13 +87,13 @@
             </label>
           <% end %>
           <label class="label">
-            <span class="label-text-alt text-base-content/60">This is the date labelled "Date Created" on the service tracking page. It may be different from when you completed your application.</span>
+            <span class="label-text-alt text-base-content/60"><%= t("case.portal_created_help") %></span>
           </label>
         </div>
 
         <% if @public_service.requires_region? %>
         <div class="form-control min-w-0">
-          <%= f.label :region, "Region *", class: "label" %>
+          <%= f.label :region, t("case.region_required"), class: "label" %>
           <%= f.select :region,
             options_from_collection_for_select(@regions, :name, :name, @case.region),
             { include_blank: t("case.select_region") },
@@ -109,7 +109,7 @@
         </div>
       </div>
     </div>
-
+    <% if @public_service.tracks_portal_milestones? %>
     <div class="card mb-8 min-w-0 border border-base-300 bg-base-100">
       <div class="card-body min-w-0 space-y-6">
         <h2 class="card-title text-xl"><%= t("case.portal_question") %></h2>
@@ -145,7 +145,7 @@
             class="input input-bordered w-full"
             placeholder="<%= t('case.leave_blank') %>" />
           <label class="label">
-            <span class="label-text-alt text-base-content/60">Leave blank if the tracking page does not show an overall status.</span>
+            <span class="label-text-alt text-base-content/60"><%= t("case.leave_blank") %></span>
           </label>
         </div>
       </div>
@@ -175,6 +175,11 @@
         </div>
       </div>
     </div>
+    <% else %>
+      <div class="alert alert-info mb-8" role="note">
+        <span><%= t("case.no_portal_milestones") %></span>
+      </div>
+    <% end %>
 
     <% if @observation&.errors&.any? %>
       <div class="alert alert-error" role="alert">

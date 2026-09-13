@@ -14,7 +14,8 @@ class AssistantsController < ApplicationController
   def explain_rule
     service = PublicService.find_by(slug: params[:service_slug], active: true)
     rule = begin
-      service && ServiceRules::Resolver.call(public_service: service, rule_type: :expected_duration_days)
+      rule_type = service&.slug.in?(%w[deed-registration registration-of-title]) ? :service_charter_turnaround : :expected_duration_days
+      service && ServiceRules::Resolver.call(public_service: service, rule_type: rule_type)
     rescue ServiceRules::Resolver::NotFound
       nil
     end

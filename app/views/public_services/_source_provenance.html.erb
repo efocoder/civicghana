@@ -1,0 +1,9 @@
+<% if source.present? %>
+  <dl class="mt-3 grid gap-x-4 gap-y-1 border-t border-base-300 pt-3 text-xs text-base-content/65 sm:grid-cols-2">
+    <div><dt class="inline font-semibold"><%= t("service.source") %>:</dt> <dd class="inline"><%= source.title %></dd></div>
+    <div><dt class="inline font-semibold"><%= t("service.publisher") %>:</dt> <dd class="inline"><%= source.publisher %></dd></div>
+    <% if source.provision.present? %><div><dt class="inline font-semibold"><%= t("service.provision") %>:</dt> <dd class="inline"><%= source.provision %></dd></div><% end %>
+    <div><dt class="inline font-semibold"><%= t("service.last_verified") %>:</dt> <dd class="inline"><%= l(source.last_verified_at.to_date, format: :long) %></dd></div>
+  </dl>
+  <%= link_to t("common.open_source"), source.url, target: "_blank", rel: "noopener noreferrer", class: "link link-primary mt-2 inline-block text-xs" %>
+<% end %>

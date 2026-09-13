@@ -16,7 +16,7 @@ module Ai
         service: case_record.public_service,
         limit: 3
       )
-      return fallback("CivicRoute could not find relevant verified sources for this explanation.") if retrieval.chunks.empty?
+      return fallback("CivicRoute could not find relevant verified sources for this explanation.") if retrieval.sources.empty?
 
       context = [
         "Service: #{case_record.public_service.name}",

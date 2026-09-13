@@ -1,5 +1,5 @@
 class SourceChunk < ApplicationRecord
-  SEARCH_STOPWORDS = %w[about after again also an and are can could does for from how i in is it long of on or the take tell that their this to what when where which who why].freeze
+  SEARCH_STOPWORDS = %w[about after again also an and are can could does for from how i in is it long many much of on or take tell that their this time to what when where which who why].freeze
   belongs_to :source
   belongs_to :public_service
 
@@ -17,6 +17,15 @@ class SourceChunk < ApplicationRecord
     ranked_query = search_query(query)
     chunks = active_sources
     chunks = chunks.where(source: source) if source
+    meaningful_terms = query.to_s.downcase.scan(/[[:alnum:]]+/).uniq
+      .reject { |term| term.length < 3 || SEARCH_STOPWORDS.include?(term) }
+    # Generic questions such as “How long does it take?” contain no searchable
+    # domain terms; for a service-scoped request, return its curated chunks in
+    # editorial order rather than incorrectly claiming no verified context.
+    if meaningful_terms.empty?
+      scoped = service ? chunks.for_service(service) : chunks
+      return scoped.includes(:source).order(:position).first(limit)
+    end
     if ranked_query.present?
       metadata_terms = query.to_s.scan(/[[:alnum:]]+/).select { |term| term.length >= 3 }.uniq.first(20)
       text_matches = chunks.where("content_tsv @@ to_tsquery('english', ?)", ranked_query)
@@ -41,8 +50,9 @@ class SourceChunk < ApplicationRecord
     # false positives such as "completely" matching the source word
     # "Completed" while still allowing questions like "how long ... payment"
     # to find a source that says "within fourteen days after payment".
-    terms = query.to_s.downcase.scan(/[[:alnum:]]+/).uniq
-      .reject { |term| term.length < 3 || SEARCH_STOPWORDS.include?(term) }
+    terms = meaningful_terms
+    return candidates.first(limit) if terms.empty?
+
     candidates.select do |chunk|
       searchable_text = [ chunk.content, chunk.section_label, chunk.provision, chunk.source&.title ].compact.join(" ").downcase
       terms.any? { |term| searchable_text.include?(term) }

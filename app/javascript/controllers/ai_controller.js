@@ -143,7 +143,7 @@ export default class extends Controller {
   showRefinedDraft(refinedText, valid) {
     const draftBody = document.getElementById("draft-body")
     if (draftBody) {
-      draftBody.value = refinedText.replace(/\*\*/g, "")
+      draftBody.value = this.cleanAiText(refinedText)
     }
 
     if (this.hasResponseTarget) {
@@ -194,9 +194,24 @@ export default class extends Controller {
     // CivicRoute renders authoritative citations as source cards, so remove
     // the entire provider-generated source line (including nested brackets).
     const withoutInlineSources = (text || "").replace(/(?:\*+\s*)?\(?\s*Source:\s*[^\n]*(?:\n|$)/gi, "")
-    const escaped = this.escapeHtml(withoutInlineSources)
-    return escaped
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\n/g, "<br>")
+    return this.escapeHtml(this.cleanAiText(withoutInlineSources)).replace(/\n/g, "<br>")
+  }
+
+  cleanAiText(text) {
+    return (text || "")
+      .replace(/\r\n?/g, "\n")
+      // Remove markdown headings, blockquotes, list bullets, emphasis,
+      // code fences, and link wrappers while retaining their words.
+      .replace(/^\s{0,3}#{1,6}\s*/gm, "")
+      .replace(/^\s*>\s?/gm, "")
+      .replace(/^\s*(?:[-*+]|•)\s+/gm, "")
+      .replace(/^\s*```[^\n]*\n?/gm, "")
+      .replace(/```/g, "")
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+      .replace(/[*_~`]/g, "")
+      .replace(/^\s*[-=]{3,}\s*$/gm, "")
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
   }
 }

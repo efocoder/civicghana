@@ -21,23 +21,23 @@
       <div id="how-it-works" class="flex-shrink-0 w-full lg:w-80">
         <div class="card bg-base-200 border border-base-300">
           <div class="card-body p-5">
-            <h3 class="card-title text-sm text-base-content/60 mb-3">How CivicRoute works</h3>
+            <h2 class="card-title text-sm text-base-content/60 mb-3"><%= t("nav.how_it_works") %></h2>
             <div class="space-y-3">
               <div class="flex items-start gap-3">
                 <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content text-xs font-bold">1</span>
-                <p class="text-sm text-base-content/80">See the verified published rule</p>
+                <p class="text-sm text-base-content/80"><%= t("homepage.step_verified_rule") %></p>
               </div>
               <div class="flex items-start gap-3">
                 <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content text-xs font-bold">2</span>
-                <p class="text-sm text-base-content/80">Compare portal snapshots with updates</p>
+                <p class="text-sm text-base-content/80"><%= t("homepage.step_compare") %></p>
               </div>
               <div class="flex items-start gap-3">
                 <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content text-xs font-bold">3</span>
-                <p class="text-sm text-base-content/80">Detect discrepancies automatically</p>
+                <p class="text-sm text-base-content/80"><%= t("homepage.step_discrepancy") %></p>
               </div>
               <div class="flex items-start gap-3">
                 <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content text-xs font-bold">4</span>
-                <p class="text-sm text-base-content/80">Get a verified next action</p>
+                <p class="text-sm text-base-content/80"><%= t("homepage.step_action") %></p>
               </div>
             </div>
           </div>
@@ -47,13 +47,13 @@
   </div>
 
   <h2 class="mb-6 text-sm font-semibold uppercase tracking-wider text-base-content/60"><%= t("homepage.available_services") %></h2>
-  <p class="-mt-4 mb-5 max-w-2xl text-base text-base-content/70">Each service shows the level of verified support CivicRoute can provide. Choose a service to see its sources and next steps.</p>
+  <p class="-mt-4 mb-5 max-w-2xl text-base text-base-content/70"><%= t("homepage.services_intro") %></p>
 
   <%= form_with url: root_path, method: :get, class: "mb-6 grid gap-3 rounded-box border border-base-300 bg-base-100 p-4 md:grid-cols-4" do |form| %>
-    <%= form.search_field :q, value: params[:q], placeholder: "Search services", class: "input input-bordered" %>
-    <%= form.select :agency_id, options_from_collection_for_select(@agencies, :id, :name, params[:agency_id]), { include_blank: "All agencies" }, class: "select select-bordered" %>
-    <%= form.select :unit_id, options_from_collection_for_select(@units, :id, :name, params[:unit_id]), { include_blank: "All units" }, class: "select select-bordered" %>
-    <%= form.submit "Filter", class: "btn btn-primary" %>
+    <%= form.search_field :q, value: params[:q], placeholder: t("homepage.search_services"), aria: { label: t("homepage.search_services") }, class: "input input-bordered" %>
+    <%= form.select :agency_id, options_from_collection_for_select(@agencies, :id, :translated_name, params[:agency_id]), { include_blank: t("homepage.all_agencies") }, class: "select select-bordered", aria: { label: t("homepage.all_agencies") } %>
+    <%= form.select :unit_id, options_from_collection_for_select(@units, :id, :translated_name, params[:unit_id]), { include_blank: t("homepage.all_units") }, class: "select select-bordered", aria: { label: t("homepage.all_units") } %>
+    <%= form.submit t("homepage.filter"), class: "btn btn-primary" %>
   <% end %>
 
   <div class="grid gap-6 md:grid-cols-2">
@@ -65,7 +65,7 @@
             <span class="text-base-content/60"><%= service.institution.translated_name %></span>
             <% if service.organizational_unit %><span class="badge badge-ghost"><%= service.organizational_unit.translated_name %></span><% end %>
             <span class="badge badge-outline" title="CivicRoute support available for this service">
-              <%= { "directory" => "Information available", "guided" => "Verified guide available", "trackable" => "Application tracking supported" }.fetch(service.support_level.to_s, "Information available") %>
+              <%= t("homepage.support_levels.#{service.support_level}") %>
             </span>
           </div>
           <div>
@@ -83,8 +83,8 @@
     <% end %>
     <% if @public_services.empty? %>
       <div class="civic-surface col-span-full p-8 text-center" role="status">
-        <h3 class="text-xl font-bold">No services available</h3>
-        <p class="mt-2 text-base-content/70">Try changing your search or filters.</p>
+        <h3 class="text-xl font-bold"><%= t("homepage.no_services") %></h3>
+        <p class="mt-2 text-base-content/70"><%= t("homepage.try_filters") %></p>
         <%= link_to t("common.clear_filters"), root_path, class: "btn btn-outline btn-sm mt-4" %>
       </div>
     <% end %>

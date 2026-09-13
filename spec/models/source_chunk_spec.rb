@@ -35,6 +35,16 @@ RSpec.describe SourceChunk, type: :model do
   end
 
   describe ".relevant_chunks" do
+    it "handles generic duration questions without requiring a domain keyword" do
+      service = create(:public_service)
+      source = create(:source)
+      create(:source_chunk, public_service: service, source: source,
+        content: "The official service takes fourteen days after payment.", position: 1)
+
+      results = SourceChunk.relevant_chunks(query: "How long does it take?", service: service)
+
+      expect(results).not_to be_empty
+    end
     it "combines active sources and search" do
       active = create(:source, active: true)
       inactive = create(:source, active: false, url: "https://inactive-#{SecureRandom.hex}.example.com")

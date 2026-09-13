@@ -1,25 +1,25 @@
-<% content_for :title, "Application assessment | CivicRoute Ghana" %>
+<% content_for :title, "#{t('case.application_assessment')} | #{t('civicroute.app_name')}" %>
 
 <div class="breadcrumbs mb-6 text-sm" aria-label="Breadcrumb">
   <ul>
-    <li><%= link_to "Services", root_path %></li>
+    <li><%= link_to t("nav.services"), root_path %></li>
     <li><%= link_to @case.public_service.translated_name, public_service_path(@case.public_service.slug) %></li>
-    <li aria-current="page">Assessment</li>
+    <li aria-current="page"><%= t("nav.assessment") %></li>
   </ul>
 </div>
 
 <%= link_to public_service_path(@case.public_service.slug), class: "btn btn-ghost btn-sm mb-4 gap-1" do %>
   <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-  Back to service guide
+  <%= t("nav.back_to_service_guide") %>
 <% end %>
 
 <div class="mb-6">
   <p class="mb-2 font-semibold text-primary"><%= @case.public_service.institution.country.name %> &middot; <%= @case.public_service.institution.translated_name %></p>
   <div class="flex flex-wrap items-center gap-3">
-    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">Application assessment</h1>
+    <h1 class="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl"><%= t("case.application_assessment") %></h1>
     <%= link_to new_case_observation_path(@case), class: "btn btn-outline btn-sm gap-1" do %>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-      Record an update
+      <%= t("case.record_update") %>
     <% end %>
   </div>
 </div>
@@ -28,6 +28,7 @@
   <button type="button" class="btn btn-outline btn-sm" data-saved-item-target="button" data-action="saved-item#toggle"><%= t("saved.save_case") %></button>
   <button type="button" class="btn btn-ghost btn-sm" data-action="saved-item#copyLink"><%= t("saved.copy_link") %></button>
   <span class="ml-2 text-sm text-success" data-saved-item-target="state"></span><span class="ml-2 text-sm text-error" data-saved-item-target="message"></span>
+  <p class="mt-2 max-w-2xl text-xs text-base-content/60"><%= t("saved.bearer_notice") %></p>
 </div>
 
 <div class="grid gap-6 xl:grid-cols-[1fr_22rem]">
@@ -510,7 +511,7 @@
         </div>
       </div>
     </div>
-
+    <% if @latest_portal.present? && @case.public_service.tracks_portal_milestones? %>
     <div class="card border border-base-300 bg-base-100">
       <div class="card-body p-4">
         <h2 class="card-title text-base mb-3">Portal milestones</h2>
@@ -530,6 +531,7 @@
         </div>
       </div>
     </div>
+    <% end %>
 
     <div class="card border border-base-300 bg-base-100">
       <div class="card-body p-4">

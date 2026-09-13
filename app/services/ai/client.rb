@@ -15,7 +15,7 @@ module Ai
       if provider.present? && provider.to_s != Ai::ProviderRegistry.default_name
         raise Ai::ProviderRegistry::UnknownProvider, "Unknown AI provider"
       end
-      adapter = Ai::ProviderRegistry.fetch
+      adapter = Ai::ProviderRegistry.fetch(provider.presence || Ai::ProviderRegistry.default_name)
       started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       response = adapter.generate(
         messages: build_messages(system_prompt, user_prompt, context),

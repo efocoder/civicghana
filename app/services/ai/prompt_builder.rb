@@ -48,7 +48,7 @@ module Ai
     PROMPT
 
     def self.system_prompt(response_language: I18n.locale)
-    language_name = response_language.to_s == "fr" ? "French" : "English"
+      language_name = { "fr" => "French", "tw" => "Twi (Akan)", "en" => "English" }.fetch(response_language.to_s, "English")
       "#{SYSTEM_PROMPT}\n\nRespond in the user's selected CivicRoute language: #{language_name}. Keep official source titles and statutory wording in their authoritative form."
     end
 

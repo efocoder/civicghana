@@ -1,4 +1,4 @@
-const CACHE_NAME = "civicroute-v1";
+const CACHE_NAME = "civicroute-public-v2";
 const STATIC_ASSETS = [
   "/",
   "/offline.html",
@@ -33,7 +33,9 @@ self.addEventListener("fetch", function(event) {
 
   if (event.request.method !== "GET") return;
 
-  if (url.pathname.startsWith("/cases") || url.pathname.startsWith("/assistant") || url.pathname.startsWith("/case_actions") || url.pathname.startsWith("/observations")) {
+  if (url.origin !== self.location.origin || event.request.method !== "GET") return;
+
+  if (url.pathname.startsWith("/cases") || url.pathname.startsWith("/assistant") || url.pathname.startsWith("/case_actions") || url.pathname.startsWith("/observations") || url.pathname.startsWith("/admin") || url.pathname.startsWith("/saved")) {
     return;
   }
 
@@ -49,6 +51,9 @@ self.addEventListener("fetch", function(event) {
     );
     return;
   }
+
+  const isPublicGuide = event.request.mode === "navigate" && (url.pathname === "/" || url.pathname.startsWith("/public_services/"));
+  if (!isPublicGuide) return;
 
   event.respondWith(
     fetch(event.request).then(function(response) {

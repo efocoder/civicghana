@@ -3,8 +3,12 @@ class CasesController < ApplicationController
     @case = Case.new
     services = PublicService.includes(:catalog_translations, process_steps: :catalog_translations, institution: [ :catalog_translations, :country ])
       .where(active: true, case_enabled: true, support_level: "trackable")
-    @public_service = params[:service_slug].present? ? services.find_by!(slug: params[:service_slug]) : services.order(:name).first!
-    @tracking_steps = @public_service.process_steps.active
+    @public_service = if params[:service_slug].present?
+      services.find_by!(slug: params[:service_slug])
+    else
+      services.order(Arel.sql("CASE WHEN slug = 'official-consolidated-search' THEN 0 ELSE 1 END"), tracks_portal_milestones: :desc, name: :asc).first!
+    end
+    @tracking_steps = tracking_steps_for(@public_service)
     @regions = @public_service.institution.country.regions.active.order(:name)
     @portal_statuses = @public_service.portal_statuses.active
   end
@@ -21,23 +25,21 @@ class CasesController < ApplicationController
     end
 
     @case.public_service = @public_service
-    @tracking_steps = @public_service.process_steps.active
+    @tracking_steps = tracking_steps_for(@public_service)
     @regions = @public_service.institution.country.regions.active.order(:name)
     @portal_statuses = @public_service.portal_statuses.active
-    @observation = @case.case_observations.build(observation_params)
-    submitted_milestones.each do |step_id, status|
-      @observation.case_milestone_observations.build(process_step_id: step_id, status: status)
-    end
+    @observation = @case.case_observations.build(observation_params) if @public_service.tracks_portal_milestones?
+    submitted_milestones.each { |step_id, status| @observation.case_milestone_observations.build(process_step_id: step_id, status: status) }
 
     begin
       Case.transaction do
-        if submitted_milestones.empty?
+        if @public_service.tracks_portal_milestones? && submitted_milestones.empty?
           @observation.errors.add(:base, "at least one portal milestone status is required")
           raise ActiveRecord::Rollback
         end
 
         @case.save!
-        @observation.save!
+        @observation&.save!
       end
       if @case.persisted?
         redirect_to @case
@@ -87,6 +89,10 @@ class CasesController < ApplicationController
 
   def observation_params
     params.fetch(:case_observation, {}).permit(:observed_on, :overall_status).merge(observation_type: :portal)
+  end
+
+  def tracking_steps_for(service)
+    service.tracks_portal_milestones? ? service.process_steps.active : ProcessStep.none
   end
 
   def submitted_milestones
