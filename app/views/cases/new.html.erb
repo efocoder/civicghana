@@ -28,8 +28,14 @@
   </div>
 
   <turbo-frame id="case-assessment-form">
-  <%= simple_form_for @case, class: "case-form min-w-0 space-y-8 sm:space-y-10", data: { turbo_frame: "_top" } do |f| %>
+  <%= simple_form_for @case, class: "case-form min-w-0 space-y-8 sm:space-y-10", data: { turbo_frame: "_top", controller: ("error-focus" if @case.errors.any? || @observation&.errors&.any?) } do |f| %>
     <%= f.hidden_field :public_service_id, value: @public_service.id %>
+
+    <% if @observation&.errors&.any? %>
+      <div class="alert alert-error mb-8" role="alert" tabindex="-1" data-error-focus-target="summary">
+        <span><%= @observation.errors.full_messages.to_sentence %></span>
+      </div>
+    <% end %>
 
     <div class="card mb-8 min-w-0 border border-base-300 bg-base-100">
       <div class="card-body min-w-0 space-y-6">
@@ -49,15 +55,16 @@
           <%= f.label :application_completed_on, t("case.completed_date"), class: "label" %>
           <%= f.date_field :application_completed_on,
             class: "input input-bordered w-full #{'input-error' if @case.errors[:application_completed_on].any?}",
+            aria: { describedby: "application-completed-help#{' application-completed-error' if @case.errors[:application_completed_on].any?}" },
             max: Date.current.to_s,
             required: true %>
           <% if @case.errors[:application_completed_on].any? %>
             <label class="label">
-              <span class="label-text-alt text-error"><%= @case.errors[:application_completed_on].first %></span>
+              <span id="application-completed-error" class="label-text-alt text-error"><%= @case.errors[:application_completed_on].first %></span>
             </label>
           <% end %>
           <label class="label">
-            <span class="label-text-alt text-base-content/60"><%= t("case.completed_help") %></span>
+            <span id="application-completed-help" class="label-text-alt text-base-content/60"><%= t("case.completed_help") %></span>
           </label>
         </div>
 
@@ -65,14 +72,15 @@
           <%= f.label :payment_date, t("case.payment_date"), class: "label" %>
           <%= f.date_field :payment_date,
             class: "input input-bordered w-full #{'input-error' if @case.errors[:payment_date].any?}",
+            aria: { describedby: "payment-date-help#{' payment-date-error' if @case.errors[:payment_date].any?}" },
             max: Date.current.to_s %>
           <% if @case.errors[:payment_date].any? %>
             <label class="label">
-              <span class="label-text-alt text-error"><%= @case.errors[:payment_date].first %></span>
+              <span id="payment-date-error" class="label-text-alt text-error"><%= @case.errors[:payment_date].first %></span>
             </label>
           <% end %>
           <label class="label">
-            <span class="label-text-alt text-base-content/60"><%= t("case.payment_help") %></span>
+            <span id="payment-date-help" class="label-text-alt text-base-content/60"><%= t("case.payment_help") %></span>
           </label>
         </div>
 
@@ -80,14 +88,15 @@
           <%= f.label :portal_created_on, t("case.portal_date_created"), class: "label" %>
           <%= f.date_field :portal_created_on,
             class: "input input-bordered w-full #{'input-error' if @case.errors[:portal_created_on].any?}",
+            aria: { describedby: "portal-created-help#{' portal-created-error' if @case.errors[:portal_created_on].any?}" },
             max: Date.current.to_s %>
           <% if @case.errors[:portal_created_on].any? %>
             <label class="label">
-              <span class="label-text-alt text-error"><%= @case.errors[:portal_created_on].first %></span>
+              <span id="portal-created-error" class="label-text-alt text-error"><%= @case.errors[:portal_created_on].first %></span>
             </label>
           <% end %>
           <label class="label">
-            <span class="label-text-alt text-base-content/60"><%= t("case.portal_created_help") %></span>
+            <span id="portal-created-help" class="label-text-alt text-base-content/60"><%= t("case.portal_created_help") %></span>
           </label>
         </div>
 
@@ -118,10 +127,10 @@
         <div class="grid min-w-0 gap-6 md:grid-cols-2">
         <% @tracking_steps.each do |step| %>
           <div class="form-control min-w-0">
-            <label class="label">
+            <label class="label" for="milestone-<%= step.id %>">
               <span class="label-text break-words font-semibold"><%= step.translated_name %></span>
             </label>
-            <select name="milestones[<%= step.id %>]"
+            <select id="milestone-<%= step.id %>" name="milestones[<%= step.id %>]"
               class="select select-bordered w-full">
               <option value=""><%= t("case.select_status") %></option>
               <% @portal_statuses.each do |status_record| %>
@@ -137,14 +146,14 @@
         </div>
 
         <div class="form-control min-w-0">
-          <label class="label">
+          <label class="label" for="case_observation_overall_status">
             <span class="label-text font-semibold"><%= t("case.overall_status") %></span>
           </label>
           <input type="text" name="case_observation[overall_status]"
             value="<%= params.dig(:case_observation, :overall_status) %>"
             class="input input-bordered w-full"
             placeholder="<%= t('case.leave_blank') %>" />
-          <label class="label">
+          <label class="label" for="case_observation_observed_on">
             <span class="label-text-alt text-base-content/60"><%= t("case.leave_blank") %></span>
           </label>
         </div>
@@ -178,12 +187,6 @@
     <% else %>
       <div class="alert alert-info mb-8" role="note">
         <span><%= t("case.no_portal_milestones") %></span>
-      </div>
-    <% end %>
-
-    <% if @observation&.errors&.any? %>
-      <div class="alert alert-error" role="alert">
-        <span><%= @observation.errors.full_messages.to_sentence %></span>
       </div>
     <% end %>
 

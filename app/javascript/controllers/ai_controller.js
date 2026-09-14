@@ -6,6 +6,15 @@ export default class extends Controller {
 
   connect() {
     this.loading = false
+    if (this.hasResponseTarget) {
+      this.responseTarget.setAttribute("role", "status")
+      this.responseTarget.setAttribute("aria-live", "polite")
+      this.responseTarget.setAttribute("aria-atomic", "false")
+    }
+    if (this.hasErrorTarget) {
+      this.errorTarget.setAttribute("role", "alert")
+    }
+    if (this.hasLoadingTarget) this.loadingTarget.setAttribute("aria-hidden", "true")
   }
 
   async ask(event) {
@@ -124,7 +133,8 @@ export default class extends Controller {
     }
 
     if (this.hasSourcesTarget && sources.length > 0) {
-      this.sourcesTarget.innerHTML = sources.map(s =>
+      const heading = this.sourcesTarget.querySelector("p")?.outerHTML || ""
+      this.sourcesTarget.innerHTML = heading + sources.map(s =>
         `<div class="text-xs text-base-content/60 mt-1">
           <span class="font-semibold">${this.escapeHtml(s.title)}</span>
           ${s.section ? ` — ${this.escapeHtml(s.section)}` : ""}
@@ -137,6 +147,7 @@ export default class extends Controller {
 
     if (this.hasResponseTarget) {
       this.responseTarget.classList.remove("hidden")
+      this.responseTarget.setAttribute("tabindex", "-1")
     }
   }
 

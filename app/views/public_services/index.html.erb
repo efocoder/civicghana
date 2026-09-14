@@ -50,10 +50,19 @@
   <p class="-mt-4 mb-5 max-w-2xl text-base text-base-content/70"><%= t("homepage.services_intro") %></p>
 
   <%= form_with url: root_path, method: :get, class: "mb-6 grid gap-3 rounded-box border border-base-300 bg-base-100 p-4 md:grid-cols-4" do |form| %>
-    <%= form.search_field :q, value: params[:q], placeholder: t("homepage.search_services"), aria: { label: t("homepage.search_services") }, class: "input input-bordered" %>
-    <%= form.select :agency_id, options_from_collection_for_select(@agencies, :id, :translated_name, params[:agency_id]), { include_blank: t("homepage.all_agencies") }, class: "select select-bordered", aria: { label: t("homepage.all_agencies") } %>
-    <%= form.select :unit_id, options_from_collection_for_select(@units, :id, :translated_name, params[:unit_id]), { include_blank: t("homepage.all_units") }, class: "select select-bordered", aria: { label: t("homepage.all_units") } %>
-    <%= form.submit t("homepage.filter"), class: "btn btn-primary" %>
+    <div class="form-control">
+      <%= form.label :q, t("homepage.search_services"), class: "label font-semibold" %>
+      <%= form.search_field :q, value: params[:q], class: "input input-bordered" %>
+    </div>
+    <div class="form-control">
+      <%= form.label :agency_id, t("homepage.agency"), class: "label font-semibold" %>
+      <%= form.select :agency_id, options_from_collection_for_select(@agencies, :id, :translated_name, params[:agency_id]), { include_blank: t("homepage.all_agencies") }, class: "select select-bordered" %>
+    </div>
+    <div class="form-control">
+      <%= form.label :unit_id, t("homepage.unit"), class: "label font-semibold" %>
+      <%= form.select :unit_id, options_from_collection_for_select(@units, :id, :translated_name, params[:unit_id]), { include_blank: t("homepage.all_units") }, class: "select select-bordered" %>
+    </div>
+    <%= form.submit t("homepage.filter"), class: "btn btn-primary self-end" %>
   <% end %>
 
   <div class="grid gap-6 md:grid-cols-2">

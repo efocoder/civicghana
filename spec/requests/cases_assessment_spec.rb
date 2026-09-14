@@ -110,6 +110,18 @@ RSpec.describe "Cases", type: :request do
 
       expect(response).to have_http_status(:unprocessable_entity)
     end
+
+    it "displays the milestone validation message at the top of the form" do
+      post cases_path, params: valid_params.merge(milestones: {})
+
+      page = Nokogiri::HTML(response.body)
+      form = page.at_css("form[action='#{cases_path}']")
+      alert = form.at_css("[role='alert']")
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(alert.text).to include("at least one portal milestone status is required")
+      expect(alert.xpath("preceding-sibling::div[contains(concat(' ', normalize-space(@class), ' '), ' card ')]")).to be_empty
+    end
   end
 
   describe "GET /cases/:id" do
